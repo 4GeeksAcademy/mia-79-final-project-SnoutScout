@@ -6,6 +6,28 @@ import { router } from "./routes";  // Import the router configuration
 import { StoreProvider } from './hooks/useGlobalReducer';  // Import the StoreProvider for global state management
 import { BackendURL } from './components/BackendURL';
 
+// import { ThemeProvider, createTheme } from "@mui/material/styles";
+
+// const theme = createTheme({
+//   // Override or create new styles, colors, palettes...
+//   palette: {
+//     primary: {
+//       main: "#FF4F0F"
+//     },
+//     secondary: {
+//         main: ""
+//     }
+//   }
+// });
+
+// export default function App() {
+//   return (
+//     <ThemeProvider theme={theme}>
+//       // MUI components
+//     </ThemeProvider>
+//   );
+// }
+
 const Main = () => {
     
     if(! import.meta.env.VITE_BACKEND_URL ||  import.meta.env.VITE_BACKEND_URL == "") return (
