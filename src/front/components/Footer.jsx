@@ -1,6 +1,12 @@
-export const Footer = () => (
-	<footer className="footer mt-auto py-3 text-center text-white fs-4" 
-	style={{ backgroundColor: "#fd7e14" }}>
-		&copy; {new Date().getFullYear()} SnoutScout
-	</footer>
-);
+// src/front/components/Footer.jsx
+import React from 'react';
+
+export function Footer() {
+  return (
+    <footer className="footer-custom mt-auto">
+      <div className="container-fluid">
+        <small>SnoutScout copyright {new Date().getFullYear()}</small>
+      </div>
+    </footer>
+  );
+}

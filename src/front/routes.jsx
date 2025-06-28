@@ -2,6 +2,10 @@
 
 import { createBrowserRouter, createRoutesFromElements, Route } from "react-router-dom";
 import { Layout } from "./pages/Layout";
+import { Home } from "./pages/Home";
+import { Single } from "./pages/Single";
+import { Demo } from "./pages/Demo";
+import FindYourPup from "./pages/FindYourPup";
 import Home from "./pages/Home";
 import Question1 from "./pages/Question1";
 import Question2 from "./pages/Question2";
@@ -27,6 +31,7 @@ export const router = createBrowserRouter(
     // Root Route: All navigation will start from here.
     <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>} >
 
+   
       {/* Nested Routes: Defines sub-routes within the BaseHome component. */}
       <Route index element={<Home />} />
       <Route path="/question1" element={<Question1 />} />
@@ -37,6 +42,7 @@ export const router = createBrowserRouter(
       <Route path="/question6" element={<Question6 />} />
       <Route path="/question7" element={<Question7 />} />
       <Route path="/question8" element={<Question8 />} />
+       <Route path="find-your-pup" element={<FindYourPup />} />
 
 
 
