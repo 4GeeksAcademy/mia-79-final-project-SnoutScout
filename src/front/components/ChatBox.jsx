@@ -8,8 +8,8 @@ export const ChatBox = () => {
 
     return (
         <div className="container">
-                <div className="chatbox">
-                    <div className="receieved-messsage border m-4 p-2" style={{ color: "black", backgroundColor: "#FFFFFF80", maxWidth: "400px", wordWrap: "break-word", borderRadius: "15px" }}>
+            <div className="chatbox">
+                <div className="receieved-messsage border m-4 p-2" style={{ color: "black", backgroundColor: "#FFFFFF80", maxWidth: "400px", wordWrap: "break-word", borderRadius: "15px" }}>
                     <h5>Hi there! Is Charlie available for a first meeting on next Tuesday?</h5>
                     <h5>10:15am</h5>
                 </div>
@@ -17,7 +17,7 @@ export const ChatBox = () => {
                     <h5>Hi! Thank you so much for contacting our shelter! I can schedule your appointment for next Tuesday!</h5>
                     <h5>11:45am</h5>
                 </div>
-                </div >
+            </div >
             <div className="chat-input m-1 p-2">
                 <div class="input-group">
                     <textarea class="form-control" aria-label="chat input" style={{ height: "100px", minHeight: "100px", maxHeight: "100px" }}></textarea>
@@ -29,5 +29,5 @@ export const ChatBox = () => {
 }
 
 
-       
+
 
