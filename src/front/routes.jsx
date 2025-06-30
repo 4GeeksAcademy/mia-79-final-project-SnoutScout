@@ -2,11 +2,10 @@
 
 import { createBrowserRouter, createRoutesFromElements, Route } from "react-router-dom";
 import { Layout } from "./pages/Layout";
-import { Home } from "./pages/Home";
-import { Single } from "./pages/Single";
-import { Demo } from "./pages/Demo";
+import  Home  from "./pages/Home";
+//import { Single } from "./pages/Single";
+//import { Demo } from "./pages/Demo";
 import FindYourPup from "./pages/FindYourPup";
-import Home from "./pages/Home";
 import Question1 from "./pages/Question1";
 import Question2 from "./pages/Question2";
 import Question3 from "./pages/Question3";
@@ -42,7 +41,7 @@ export const router = createBrowserRouter(
       <Route path="/question6" element={<Question6 />} />
       <Route path="/question7" element={<Question7 />} />
       <Route path="/question8" element={<Question8 />} />
-       <Route path="find-your-pup" element={<FindYourPup />} />
+       <Route path="/find-your-pup" element={<FindYourPup />} />
 
 
 
