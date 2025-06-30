@@ -5,6 +5,7 @@ import { Layout } from "./pages/Layout";
 import { Home } from "./pages/Home";
 import { Single } from "./pages/Single";
 import { Demo } from "./pages/Demo";
+import { Messages } from "./pages/Messages";
 import FindYourPup from "./pages/FindYourPup";
 import Home from "./pages/Home";
 import Question1 from "./pages/Question1";
@@ -30,10 +31,10 @@ export const router = createBrowserRouter(
 
     // Root Route: All navigation will start from here.
     <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>} >
-
    
       {/* Nested Routes: Defines sub-routes within the BaseHome component. */}
       <Route index element={<Home />} />
+      <Route path="/messages" element={<Messages />} />
       <Route path="/question1" element={<Question1 />} />
       <Route path="/question2" element={<Question2 />} />
       <Route path="/question3" element={<Question3 />} />
