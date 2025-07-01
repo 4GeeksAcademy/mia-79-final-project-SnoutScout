@@ -18,14 +18,10 @@ class Pet(db.Model):
     weight = db.Column(db.String(15), nullable=False)
     breed = db.Column(db.String(45), nullable=False)
     activity = db.Column(db.String(45), nullable=False)
-    
 
-
-    
 
     image_url = db.Column(db.String(500), nullable=False)
 
-    
     
     # Relationship with favorites
     favorites = db.relationship('Favorite', backref='pet', lazy=True, cascade='all, delete-orphan')
