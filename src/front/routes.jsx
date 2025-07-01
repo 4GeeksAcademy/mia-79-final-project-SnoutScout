@@ -2,12 +2,9 @@
 
 import { createBrowserRouter, createRoutesFromElements, Route } from "react-router-dom";
 import { Layout } from "./pages/Layout";
-import { Home } from "./pages/Home";
-import { Single } from "./pages/Single";
-import { Demo } from "./pages/Demo";
-import { Messages } from "./pages/Messages";
-import FindYourPup from "./pages/FindYourPup";
 import Home from "./pages/Home";
+import { Messages } from "./pages/Messages";
+import FindYourPup from "./pages/FindYourPup"
 import Question1 from "./pages/Question1";
 import Question2 from "./pages/Question2";
 import Question3 from "./pages/Question3";
@@ -15,11 +12,7 @@ import Question4 from "./pages/Question4";
 import Question5 from "./pages/Question5";
 import Question6 from "./pages/Question6";
 import Question7 from "./pages/Question7";
-import Question8 from "./pages/Question8";
-
-// import { Single } from "./pages/Single";
-// import { Demo } from "./pages/Demo";
-
+import Question8 from "./pages/Question8"
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
