@@ -11,6 +11,7 @@ import Question5 from "./pages/Question5";
 import Question6 from "./pages/Question6";
 import Question7 from "./pages/Question7";
 import Question8 from "./pages/Question8";
+import Registerform from "./pages/RegisterForm";
 
 // import { Single } from "./pages/Single";
 // import { Demo } from "./pages/Demo";
@@ -37,6 +38,7 @@ export const router = createBrowserRouter(
       <Route path="/question6" element={<Question6 />} />
       <Route path="/question7" element={<Question7 />} />
       <Route path="/question8" element={<Question8 />} />
+      <Route path="/register" element={<Registerform />} />
 
 
 

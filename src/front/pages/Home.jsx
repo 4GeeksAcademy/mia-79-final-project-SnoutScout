@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+
 const Home = () => {
   const [zipCode, setZipCode] = useState("");
   const navigate = useNavigate();
@@ -131,5 +132,7 @@ const Home = () => {
     </section>
   );
 };
+
+
 
 export default Home;

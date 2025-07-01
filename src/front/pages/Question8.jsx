@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+
 
 const Question8 = () => {
   const [selected, setSelected] = useState("");
@@ -26,13 +27,13 @@ const Question8 = () => {
         ))}
       </div>
 
-      <button
-        style={styles.nextButton}
-        onClick={() => navigate("/results")}
-        disabled={!selected}
-      >
-        Next
-      </button>
+      <div style={{ marginTop: "20px" }}>
+        <Link to="/register">
+          <button style={styles.button} disabled={!selected}>
+            Join Now
+          </button>
+        </Link>
+      </div>
       <p style={styles.stepText}>Step 8 of 8</p>
     </div>
   );
@@ -75,7 +76,7 @@ const styles = {
     borderColor: "#000",
     backgroundColor: "#d9f2e6",
   },
-  nextButton: {
+  button: {
     marginTop: 30,
     padding: "12px 30px",
     backgroundColor: "#004d40",
@@ -86,10 +87,10 @@ const styles = {
     cursor: "pointer",
   },
   stepText: {
-  marginTop: "10px",
-  fontSize: "14px",
-  color: "#666",
-},
+    marginTop: "10px",
+    fontSize: "14px",
+    color: "#666",
+  },
 };
 
 
