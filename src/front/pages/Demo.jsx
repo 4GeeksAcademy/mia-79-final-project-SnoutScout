@@ -35,8 +35,8 @@ export const Demo = () => {
       </ul>
       <br />
 
-      <Link to="/">
-        <button className="btn btn-primary">Back Home</button>
+      <Link to="/favorites">
+        <button className="btn btn-primary">Favorites</button>
       </Link>
     </div>
   );
