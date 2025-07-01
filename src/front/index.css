@@ -1,0 +1,18 @@
+:root {
+  --snoutscout-orange: #ff4500;
+}
+
+.navbar-custom {
+  background-color: var(--snoutscout-orange) !important;
+}
+.navbar-custom .navbar-brand,
+.navbar-custom .nav-link {
+  color: #fff !important;
+}
+
+.footer-custom {
+  background-color: var(--snoutscout-orange);
+  color: #fff;
+  text-align: center;
+  padding: 1rem 0;
+}
