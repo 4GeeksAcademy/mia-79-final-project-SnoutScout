@@ -5,8 +5,8 @@ import '../styles/Favorites.css';
 const API_BASE_URL = 'http://localhost:3001/api';
 
 /**
- * PetCard component renders a single pet's card.
- * @param {Object} pet - The pet object containing name, age, location, image, gender, weight, breed, and activity.
+ * PetCard component 
+ * @param {Object} pet - The pet object 
  * @param {Function} onRemoveFavorite - Callback function to remove pet from favorites
  * @param {number} favoriteId - ID of the favorite record
  */
@@ -27,22 +27,22 @@ function PetCard({ pet, onRemoveFavorite, favoriteId }) {
                 className="card-img-top favorites-img"
                 alt={pet.name}
             />
-            {/* Heart icon in the top-right corner */}
+           
             <span className="favorites-heart" title="Favorite">
                 ♥
             </span>
             <div className="card-body">
-                {/* Pet name */}
+               
                 <h5 className="favorites-card-title card-title mb-1">{pet.name}</h5>
-                {/* Pet age */}
+               
                 <div className="text-muted" style={{ fontSize: '0.95rem' }}>{pet.age}</div>
-                {/* Pet location */}
+                
                 <div className="favorites-location mb-2">
                     <span className="me-1" role="img" aria-label="Location">📍</span>
                     {pet.location}
                 </div>
 
-                {/* Pet details */}
+                
                 <div className="mb-3">
                     {pet.breed && (
                         <div className="mb-1">
@@ -66,11 +66,11 @@ function PetCard({ pet, onRemoveFavorite, favoriteId }) {
                     )}
                 </div>
 
-                {/* Apply to Adopt button */}
+               
                 <button className="btn favorites-btn w-100 mb-2">
                     Apply to Adopt
                 </button>
-                {/* Remove from favorites button */}
+                
                 <button
                     className="btn btn-outline-danger w-100"
                     onClick={handleRemoveFavorite}
@@ -82,22 +82,19 @@ function PetCard({ pet, onRemoveFavorite, favoriteId }) {
     );
 }
 
-/**
- * Favorites component renders the list of favorite pets in a responsive grid.
- * Fetches data from the backend API.
- */
+
 function Favorites() {
     const [favorites, setFavorites] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Fetch favorites from the backend API
+    // Fetch favorites 
     const fetchFavorites = async () => {
         try {
             setLoading(true);
             setError(null);
 
-            // For demo purposes, using user_id = 1 (the sample user created by the backend)
+           
             const response = await fetch(`${API_BASE_URL}/favorites?user_id=1`);
 
             if (!response.ok) {

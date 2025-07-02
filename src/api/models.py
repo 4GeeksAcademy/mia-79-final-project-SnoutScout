@@ -2,7 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
-# Association table for favorites
+
 
 
 class Favorite(db.Model):
@@ -11,7 +11,7 @@ class Favorite(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     pet_id = db.Column(db.Integer, db.ForeignKey('pets.id'), nullable=False)
 
-    # Relationship to access the pet and user from a favorite
+    # Relationship to access 
     user = db.relationship('User', back_populates='favorites')
     pet = db.relationship('Pet', back_populates='favorites')
 
@@ -27,8 +27,6 @@ class Favorite(db.Model):
         }
 
 # User model
-
-
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)

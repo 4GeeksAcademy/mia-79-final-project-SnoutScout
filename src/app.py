@@ -14,7 +14,7 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 
-# This will allow all origins (for debugging, you can restrict later)
+
 CORS(
     app,
     origins=["https://bug-free-train-j7g7vg7p7wp3qvqq-3000.app.github.dev"],
@@ -22,7 +22,7 @@ CORS(
     allow_headers=["Content-Type", "Authorization"],
     expose_headers=["Content-Type", "Authorization"],
     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    send_wildcard=True  # Sometimes needed on Codespaces
+    send_wildcard=True  
 )
 
 
@@ -30,7 +30,7 @@ CORS(
 def cors_test():
     return jsonify({"message": "CORS is working!"})
 
-# from models import Person
+
 
 
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
