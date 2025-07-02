@@ -1,7 +1,54 @@
 from flask import Blueprint, request, jsonify
-from .models import db, Favorite, Pet
+from .models import db, Favorite, Pet, User
 
 api = Blueprint('api', __name__)
+
+
+@api.route('/pets', methods=['GET'])
+def get_pets():
+    """Get all pets"""
+    pets = Pet.query.all()
+    result = [pet.to_dict() for pet in pets]
+    return jsonify({"success": True, "data": result})
+
+
+@api.route('/pets', methods=['POST'])
+def create_pet():
+    """Create a new pet"""
+    data = request.get_json()
+
+    # Validate required fields
+    required_fields = ['name']
+    for field in required_fields:
+        if not data.get(field):
+            return jsonify({"success": False, "error": f"{field} is required"}), 400
+
+    # Create new pet
+    pet = Pet(
+        name=data.get('name'),
+        age=data.get('age'),
+        location=data.get('location'),
+        image_url=data.get('image_url'),
+        gender=data.get('gender'),
+        weight=data.get('weight'),
+        breed=data.get('breed'),
+        activity=data.get('activity')
+    )
+
+    db.session.add(pet)
+    db.session.commit()
+
+    return jsonify({"success": True, "data": pet.to_dict()}), 201
+
+
+@api.route('/pets/<int:pet_id>', methods=['GET'])
+def get_pet(pet_id):
+    """Get a single pet by ID"""
+    pet = Pet.query.get(pet_id)
+    if not pet:
+        return jsonify({"success": False, "error": "Pet not found"}), 404
+    return jsonify({"success": True, "data": pet.to_dict()})
+
 
 @api.route('/favorites', methods=['GET'])
 def get_favorites():
@@ -12,6 +59,7 @@ def get_favorites():
     result = [fav.to_dict() for fav in favorites]
     return jsonify({"success": True, "data": result})
 
+
 @api.route('/favorites', methods=['POST'])
 def add_favorite():
     data = request.get_json()
@@ -19,10 +67,18 @@ def add_favorite():
     pet_id = data.get('pet_id')
     if not user_id or not pet_id:
         return jsonify({"success": False, "error": "user_id and pet_id required"}), 400
+
+    # Check if favorite already exists
+    existing_favorite = Favorite.query.filter_by(
+        user_id=user_id, pet_id=pet_id).first()
+    if existing_favorite:
+        return jsonify({"success": False, "error": "Pet is already in favorites"}), 400
+
     favorite = Favorite(user_id=user_id, pet_id=pet_id)
     db.session.add(favorite)
     db.session.commit()
     return jsonify({"success": True, "data": favorite.to_dict()}), 201
+
 
 @api.route('/favorites/<int:favorite_id>', methods=['DELETE'])
 def delete_favorite(favorite_id):
@@ -32,3 +88,32 @@ def delete_favorite(favorite_id):
     db.session.delete(favorite)
     db.session.commit()
     return jsonify({"success": True, "message": "Favorite deleted"})
+
+
+@api.route('/users', methods=['GET'])
+def get_users():
+    """Get all users"""
+    users = User.query.all()
+    result = [user.to_dict() for user in users]
+    return jsonify({"success": True, "data": result})
+
+
+@api.route('/users', methods=['POST'])
+def create_user():
+    """Create a new user"""
+    data = request.get_json()
+    username = data.get('username')
+    email = data.get('email')
+
+    if not username or not email:
+        return jsonify({"success": False, "error": "username and email required"}), 400
+
+    # Check if user already exists
+    existing_user = User.query.filter_by(email=email).first()
+    if existing_user:
+        return jsonify({"success": False, "error": "User with this email already exists"}), 400
+
+    user = User(username=username, email=email)
+    db.session.add(user)
+    db.session.commit()
+    return jsonify({"success": True, "data": user.to_dict()}), 201

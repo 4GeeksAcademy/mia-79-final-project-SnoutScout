@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../styles/Favorites.css';
 
 // API base URL
-const API_BASE_URL = 'https://bug-free-train-j7g7vg7p7wp3qvqq-3001.app.github.dev/api';
+const API_BASE_URL = 'http://localhost:3001/api';
 
 /**
  * PetCard component renders a single pet's card.

@@ -3,6 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 # Association table for favorites
+
+
 class Favorite(db.Model):
     __tablename__ = 'favorites'
     id = db.Column(db.Integer, primary_key=True)
@@ -25,6 +27,8 @@ class Favorite(db.Model):
         }
 
 # User model
+
+
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -32,7 +36,8 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
 
     # Relationship to access a user's favorites
-    favorites = db.relationship('Favorite', back_populates='user', cascade='all, delete-orphan')
+    favorites = db.relationship(
+        'Favorite', back_populates='user', cascade='all, delete-orphan')
 
     def __repr__(self):
         return f'<User {self.id} - {self.username}>'
@@ -46,6 +51,8 @@ class User(db.Model):
         }
 
 # Pet model
+
+
 class Pet(db.Model):
     __tablename__ = 'pets'
     id = db.Column(db.Integer, primary_key=True)
@@ -59,7 +66,8 @@ class Pet(db.Model):
     activity = db.Column(db.String(100))
 
     # Relationship to access all favorites for this pet
-    favorites = db.relationship('Favorite', back_populates='pet', cascade='all, delete-orphan')
+    favorites = db.relationship(
+        'Favorite', back_populates='pet', cascade='all, delete-orphan')
 
     def __repr__(self):
         return f'<Pet {self.id} - {self.name}>'
