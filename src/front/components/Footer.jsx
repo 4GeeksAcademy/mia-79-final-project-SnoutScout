@@ -1,12 +1,31 @@
-// src/front/components/Footer.jsx
-import React from 'react';
+import React from "react";
 
-export function Footer() {
+const Footer = () => {
   return (
-    <footer className="footer-custom mt-auto">
-      <div className="container-fluid">
-        <small>SnoutScout copyright {new Date().getFullYear()}</small>
+    <footer style={styles.footer}>
+      <div style={styles.container}>
+        <p style={styles.text}>© {new Date().getFullYear()} SnoutScout. All rights reserved.</p>
       </div>
     </footer>
   );
-}
+};
+
+const styles = {
+  footer: {
+    backgroundColor: "#fd7e14",
+    padding: "20px 0",
+    marginTop: "auto",
+  },
+  container: {
+    maxWidth: "1200px",
+    margin: "0 auto",
+    textAlign: "center",
+  },
+  text: {
+    color: "white",
+    fontSize: "20px",
+    margin: 0,
+  },
+};
+
+export default Footer;

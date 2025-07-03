@@ -1,7 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import String, Boolean
+from sqlalchemy import String
 from datetime import datetime
-from sqlalchemy.orm import Mapped, mapped_column
+
 
 db = SQLAlchemy()
 
@@ -14,4 +14,41 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
-    questionnaire = db.relationship('Questionnaire', back_populates='user', uselist=False)
+    questionnaire = db.relationship("Questionnaire", backref="user", uselist=False)
+
+def to_dict(self):
+    return {
+        "id": self.id,
+        "first_name": self.first_name,
+        "last_name": self.last_name,
+        "email": self.email,
+        "created_at": self.created_at.isoformat()
+    }
+
+
+class Questionnaire(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    size = db.Column(db.String(50))
+    activity = db.Column(db.String(50))
+    travel = db.Column(db.String(50))
+    other_pets = db.Column(db.String(100))
+    hypoallergenic = db.Column(db.String(10))
+    gender_preference = db.Column(db.String(50))
+    yard = db.Column(db.String(10))
+    owned_pets_before = db.Column(db.String(10))
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+def to_dict(self):
+    return {
+        "id": self.id,
+        "size": self.size,
+        "activity": self.activity,
+        "travel": self.travel,
+        "other_pets": self.other_pets,
+        "hypoallergenic": self.hypoallergenic,
+        "gender_preference": self.gender_preference,
+        "yard": self.yard,
+        "owned_pets_before": self.owned_pets_before,
+        "user_id": self.user_id
+    }
