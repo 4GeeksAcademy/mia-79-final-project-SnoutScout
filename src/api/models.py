@@ -22,8 +22,8 @@ class User(db.Model):
 
 class Message(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
-    message_from: Mapped[int] = mapped_column(nullable=False, unique=True)
-    message_to: Mapped[int] = mapped_column(nullable=False, unique=True)
+    message_from: Mapped[int] = mapped_column(db.ForeignKey('user.id'), nullable=False)
+    message_to: Mapped[int] = mapped_column(db.ForeignKey('user.id'), nullable=False)
     content: Mapped[str] = mapped_column(nullable=False)
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now)
 
@@ -32,7 +32,6 @@ class Message(db.Model):
             "id": self.id,
             "message_from": self.message_from,
             "message_to": self.message_to,
-            "favorite_dog_id": self.favorited_dog_id,
             "content": self.content,
             "created_at": self.created_at,
         }
