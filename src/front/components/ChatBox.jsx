@@ -1,8 +1,7 @@
 export const ChatBox = ({ messages }) => {
     
-  // Changed to use dynamic messages
   return (
-    <div className="container">
+      <div className="container">
       <div className="chatbox">
         {messages.map((msg) => (
           <div 
@@ -21,7 +20,7 @@ export const ChatBox = ({ messages }) => {
           </div>
         ))}
       </div>
-      {/* Rest remains exactly the same */}
+
       <div className="chat-input m-1 p-2">
         <div className="input-group">
           <textarea 
