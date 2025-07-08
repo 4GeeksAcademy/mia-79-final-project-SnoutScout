@@ -1,5 +1,6 @@
 export const initialStore=()=>{
   return{
+    pets: [],
     message: null,
     todos: [
       {
@@ -32,6 +33,12 @@ export default function storeReducer(store, action = {}) {
         ...store,
         todos: store.todos.map((todo) => (todo.id === id ? { ...todo, background: color } : todo))
       };
+    case 'set_pets':
+      return {
+        ...store,
+        pets: action.payload
+      }
+
     default:
       throw Error('Unknown action.');
   }    
