@@ -11,7 +11,7 @@ from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
 from flask_cors import CORS
-
+from flask import Flask
 app = Flask(__name__)
 
 
@@ -22,15 +22,13 @@ CORS(
     allow_headers=["Content-Type", "Authorization"],
     expose_headers=["Content-Type", "Authorization"],
     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    send_wildcard=True  
+    send_wildcard=True
 )
 
 
 @app.route('/cors-test')
 def cors_test():
     return jsonify({"message": "CORS is working!"})
-
-
 
 
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"

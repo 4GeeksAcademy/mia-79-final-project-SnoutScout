@@ -1,100 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import '../styles/Favorites.css';
+import { Link } from 'react-router-dom';
+import PetCard from '../components/PetCard';
 
 // API base URL
 const API_BASE_URL = 'http://localhost:3001/api';
 
 /**
- * PetCard component 
- * @param {Object} pet - The pet object 
- * @param {Function} onRemoveFavorite - Callback function to remove pet from favorites
- * @param {number} favoriteId - ID of the favorite record
+ * Favorites component renders the list of favorite pets in a responsive grid.
+ * Fetches data from the backend API.
  */
-function PetCard({ pet, onRemoveFavorite, favoriteId }) {
-    const handleRemoveFavorite = async () => {
-        try {
-            await onRemoveFavorite(favoriteId);
-        } catch (error) {
-            console.error('Error removing favorite:', error);
-        }
-    };
-
-    return (
-        <div className="card favorites-card position-relative h-100">
-            {/* Pet image */}
-            <img
-                src={pet.image_url}
-                className="card-img-top favorites-img"
-                alt={pet.name}
-            />
-           
-            <span className="favorites-heart" title="Favorite">
-                ♥
-            </span>
-            <div className="card-body">
-               
-                <h5 className="favorites-card-title card-title mb-1">{pet.name}</h5>
-               
-                <div className="text-muted" style={{ fontSize: '0.95rem' }}>{pet.age}</div>
-                
-                <div className="favorites-location mb-2">
-                    <span className="me-1" role="img" aria-label="Location">📍</span>
-                    {pet.location}
-                </div>
-
-                
-                <div className="mb-3">
-                    {pet.breed && (
-                        <div className="mb-1">
-                            <strong>Breed:</strong> {pet.breed}
-                        </div>
-                    )}
-                    {pet.gender && (
-                        <div className="mb-1">
-                            <strong>Gender:</strong> {pet.gender}
-                        </div>
-                    )}
-                    {pet.weight && (
-                        <div className="mb-1">
-                            <strong>Weight:</strong> {pet.weight}
-                        </div>
-                    )}
-                    {pet.activity && (
-                        <div className="mb-1">
-                            <strong>Activity Level:</strong> {pet.activity}
-                        </div>
-                    )}
-                </div>
-
-               
-                <button className="btn favorites-btn w-100 mb-2">
-                    Apply to Adopt
-                </button>
-                
-                <button
-                    className="btn btn-outline-danger w-100"
-                    onClick={handleRemoveFavorite}
-                >
-                    Remove from Favorites
-                </button>
-            </div>
-        </div>
-    );
-}
-
-
 function Favorites() {
     const [favorites, setFavorites] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Fetch favorites 
+    // Fetch favorites from the backend API
     const fetchFavorites = async () => {
         try {
             setLoading(true);
             setError(null);
 
-           
+            // For demo purposes, using user_id = 1 (the sample user created by the backend)
             const response = await fetch(`${API_BASE_URL}/favorites?user_id=1`);
 
             if (!response.ok) {
@@ -147,39 +73,6 @@ function Favorites() {
         }
     };
 
-    // Add a pet to favorites (for future use)
-    const addFavorite = async (userId, petId) => {
-        try {
-            const response = await fetch(`${API_BASE_URL}/favorites`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    user_id: userId,
-                    pet_id: petId
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-
-            if (data.success) {
-                // Add the new favorite to the local state
-                setFavorites(prevFavorites => [...prevFavorites, data.data]);
-                console.log('Pet added to favorites successfully');
-            } else {
-                throw new Error(data.error || 'Failed to add favorite');
-            }
-        } catch (err) {
-            console.error('Error adding favorite:', err);
-            throw err;
-        }
-    };
-
     // Fetch favorites on component mount
     useEffect(() => {
         fetchFavorites();
@@ -189,7 +82,21 @@ function Favorites() {
     if (loading) {
         return (
             <div className="container py-5">
-                <h1 className="favorites-heading">My Favorites</h1>
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                    <h1 className="favorites-heading">My Favorites</h1>
+                    <div className="d-flex gap-2">
+                        <Link to="/pets">
+                            <button className="btn btn-primary">
+                                🐾 Browse Pets
+                            </button>
+                        </Link>
+                        <Link to="/favorites">
+                            <button className="btn btn-success" disabled>
+                                ❤️ My Favorites
+                            </button>
+                        </Link>
+                    </div>
+                </div>
                 <div className="text-center">
                     <div className="spinner-border text-primary" role="status">
                         <span className="visually-hidden">Loading...</span>
@@ -204,7 +111,21 @@ function Favorites() {
     if (error) {
         return (
             <div className="container py-5">
-                <h1 className="favorites-heading">My Favorites</h1>
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                    <h1 className="favorites-heading">My Favorites</h1>
+                    <div className="d-flex gap-2">
+                        <Link to="/pets">
+                            <button className="btn btn-primary">
+                                🐾 Browse Pets
+                            </button>
+                        </Link>
+                        <Link to="/favorites">
+                            <button className="btn btn-success" disabled>
+                                ❤️ My Favorites
+                            </button>
+                        </Link>
+                    </div>
+                </div>
                 <div className="alert alert-danger" role="alert">
                     <h4 className="alert-heading">Error Loading Favorites</h4>
                     <p>{error}</p>
@@ -224,7 +145,21 @@ function Favorites() {
     if (favorites.length === 0) {
         return (
             <div className="container py-5">
-                <h1 className="favorites-heading">My Favorites</h1>
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                    <h1 className="favorites-heading">My Favorites</h1>
+                    <div className="d-flex gap-2">
+                        <Link to="/pets">
+                            <button className="btn btn-primary">
+                                🐾 Browse Pets
+                            </button>
+                        </Link>
+                        <Link to="/favorites">
+                            <button className="btn btn-success" disabled>
+                                ❤️ My Favorites
+                            </button>
+                        </Link>
+                    </div>
+                </div>
                 <div className="text-center">
                     <div className="alert alert-info" role="alert">
                         <h4 className="alert-heading">No Favorites Yet</h4>
@@ -241,16 +176,33 @@ function Favorites() {
 
     return (
         <div className="container py-5">
-            {/* Page heading */}
-            <h1 className="favorites-heading">My Favorites</h1>
+            {/* Page heading with navigation buttons */}
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h1 className="favorites-heading">My Favorites</h1>
+                <div className="d-flex gap-2">
+                    <Link to="/pets">
+                        <button className="btn btn-primary">
+                            🐾 Browse Pets
+                        </button>
+                    </Link>
+                    <Link to="/favorites">
+                        <button className="btn btn-success" disabled>
+                            ❤️ My Favorites
+                        </button>
+                    </Link>
+                </div>
+            </div>
+
             <div className="row">
                 {/* Render a PetCard for each favorite */}
                 {favorites.map((favorite) => (
                     <div className="col-md-3 mb-4" key={favorite.id}>
                         <PetCard
                             pet={favorite.pet}
+                            isInFavorites={true}
                             onRemoveFavorite={removeFavorite}
                             favoriteId={favorite.id}
+                            showRemoveButton={true}
                         />
                     </div>
                 ))}

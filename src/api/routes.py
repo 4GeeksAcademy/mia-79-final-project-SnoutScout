@@ -1,15 +1,116 @@
 from flask import Blueprint, request, jsonify
 from .models import db, Favorite, Pet, User
+from .petfinder_service import PetfinderService
+import json
 
 api = Blueprint('api', __name__)
 
 
 @api.route('/pets', methods=['GET'])
 def get_pets():
-    """Get all pets"""
+    """Get all pets from database"""
     pets = Pet.query.all()
     result = [pet.to_dict() for pet in pets]
     return jsonify({"success": True, "data": result})
+
+
+@api.route('/pets/petfinder', methods=['GET'])
+def get_pets_from_petfinder():
+    """Get pets from Petfinder API"""
+    try:
+        # Get query parameters
+        limit = request.args.get('limit', 20, type=int)
+        location = request.args.get('location')
+        animal_type = request.args.get('type')
+        breed = request.args.get('breed')
+        size = request.args.get('size')
+        gender = request.args.get('gender')
+        age = request.args.get('age')
+
+        # Initialize Petfinder service
+        petfinder = PetfinderService()
+
+        # Get animals from Petfinder
+        response = petfinder.get_animals(
+            limit=limit,
+            location=location,
+            animal_type=animal_type,
+            breed=breed,
+            size=size,
+            gender=gender,
+            age=age
+        )
+
+        # Transform Petfinder animals to our format
+        animals = response.get('animals', [])
+        transformed_animals = []
+
+        for animal in animals:
+            transformed_animal = petfinder.transform_petfinder_animal(animal)
+            transformed_animals.append(transformed_animal)
+
+        return jsonify({
+            "success": True,
+            "data": transformed_animals,
+            "pagination": response.get('pagination', {}),
+            "source": "petfinder"
+        })
+
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@api.route('/pets/sync-petfinder', methods=['POST'])
+def sync_pets_from_petfinder():
+    """Sync pets from Petfinder API to local database"""
+    try:
+        # Get query parameters
+        limit = request.args.get('limit', 20, type=int)
+        location = request.args.get('location')
+        animal_type = request.args.get('type')
+
+        # Initialize Petfinder service
+        petfinder = PetfinderService()
+
+        # Get animals from Petfinder
+        response = petfinder.get_animals(
+            limit=limit,
+            location=location,
+            animal_type=animal_type
+        )
+
+        animals = response.get('animals', [])
+        synced_count = 0
+
+        for animal in animals:
+            # Check if pet already exists by petfinder_id
+            existing_pet = Pet.query.filter_by(
+                petfinder_id=str(animal.get('id'))).first()
+
+            if not existing_pet:
+                # Transform and create new pet
+                pet_data = petfinder.transform_petfinder_animal(animal)
+
+                # Convert contact dict to JSON string
+                if pet_data.get('contact'):
+                    pet_data['contact'] = json.dumps(pet_data['contact'])
+
+                pet = Pet(**pet_data)
+                db.session.add(pet)
+                synced_count += 1
+
+        db.session.commit()
+
+        return jsonify({
+            "success": True,
+            "message": f"Synced {synced_count} new pets from Petfinder",
+            "total_animals": len(animals),
+            "synced_count": synced_count
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
 @api.route('/pets', methods=['POST'])
@@ -32,7 +133,14 @@ def create_pet():
         gender=data.get('gender'),
         weight=data.get('weight'),
         breed=data.get('breed'),
-        activity=data.get('activity')
+        activity=data.get('activity'),
+        petfinder_id=data.get('petfinder_id'),
+        description=data.get('description'),
+        status=data.get('status'),
+        organization_id=data.get('organization_id'),
+        url=data.get('url'),
+        published_at=data.get('published_at'),
+        contact=data.get('contact')
     )
 
     db.session.add(pet)
@@ -48,6 +156,25 @@ def get_pet(pet_id):
     if not pet:
         return jsonify({"success": False, "error": "Pet not found"}), 404
     return jsonify({"success": True, "data": pet.to_dict()})
+
+
+@api.route('/pets/<int:pet_id>', methods=['DELETE'])
+def delete_pet(pet_id):
+    """Delete a pet by ID"""
+    pet = Pet.query.get(pet_id)
+    if not pet:
+        return jsonify({"success": False, "error": "Pet not found"}), 404
+
+    # Delete associated favorites first (to maintain referential integrity)
+    favorites = Favorite.query.filter_by(pet_id=pet_id).all()
+    for favorite in favorites:
+        db.session.delete(favorite)
+
+    # Delete the pet
+    db.session.delete(pet)
+    db.session.commit()
+
+    return jsonify({"success": True, "message": "Pet deleted successfully"})
 
 
 @api.route('/favorites', methods=['GET'])

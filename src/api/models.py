@@ -2,7 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
-
+# Association table for favorites
 
 
 class Favorite(db.Model):
@@ -11,7 +11,7 @@ class Favorite(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     pet_id = db.Column(db.Integer, db.ForeignKey('pets.id'), nullable=False)
 
-    # Relationship to access 
+    # Relationship to access the pet and user from a favorite
     user = db.relationship('User', back_populates='favorites')
     pet = db.relationship('Pet', back_populates='favorites')
 
@@ -27,6 +27,8 @@ class Favorite(db.Model):
         }
 
 # User model
+
+
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -63,6 +65,16 @@ class Pet(db.Model):
     breed = db.Column(db.String(100))
     activity = db.Column(db.String(100))
 
+    # Additional fields for Petfinder integration
+    # Petfinder's animal ID
+    petfinder_id = db.Column(db.String(50), unique=True)
+    description = db.Column(db.Text)  # Petfinder description
+    status = db.Column(db.String(50))  # adoptable, adopted, found, etc.
+    organization_id = db.Column(db.String(50))  # Petfinder organization ID
+    url = db.Column(db.String(255))  # Petfinder URL
+    published_at = db.Column(db.String(100))  # When published on Petfinder
+    contact = db.Column(db.Text)  # JSON string of contact info
+
     # Relationship to access all favorites for this pet
     favorites = db.relationship(
         'Favorite', back_populates='pet', cascade='all, delete-orphan')
@@ -80,5 +92,10 @@ class Pet(db.Model):
             "gender": self.gender,
             "weight": self.weight,
             "breed": self.breed,
-            "activity": self.activity
+            "activity": self.activity,
+            "petfinder_id": self.petfinder_id,
+            "description": self.description,
+            "status": self.status,
+            "url": self.url,
+            "published_at": self.published_at
         }

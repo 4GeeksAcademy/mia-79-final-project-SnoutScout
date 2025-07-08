@@ -1,91 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import '../styles/Favorites.css';
+import { Link } from 'react-router-dom';
+import PetCard from '../components/PetCard';
 
 // API base URL
 const API_BASE_URL = 'http://localhost:3001/api';
-
-/**
- * PetCard component renders a single pet's card with add to favorites functionality.
- * @param {Object} pet - The pet object containing name, age, location, image, gender, weight, breed, and activity.
- * @param {Function} onAddFavorite - Callback function to add pet to favorites
- * @param {boolean} isInFavorites - Whether the pet is already in favorites
- */
-function PetCard({ pet, onAddFavorite, isInFavorites }) {
-    const handleAddFavorite = async () => {
-        try {
-            await onAddFavorite(pet.id);
-        } catch (error) {
-            console.error('Error adding favorite:', error);
-        }
-    };
-
-    return (
-        <div className="card favorites-card position-relative h-100">
-            {/* Pet image */}
-            <img
-                src={pet.image_url}
-                className="card-img-top favorites-img"
-                alt={pet.name}
-            />
-            {/* Heart icon in the top-right corner */}
-            <span
-                className={`favorites-heart ${isInFavorites ? 'favorites-heart-active' : ''}`}
-                title={isInFavorites ? "Remove from Favorites" : "Add to Favorites"}
-                onClick={handleAddFavorite}
-                style={{ cursor: 'pointer' }}
-            >
-                ♥
-            </span>
-            <div className="card-body">
-                {/* Pet name */}
-                <h5 className="favorites-card-title card-title mb-1">{pet.name}</h5>
-                {/* Pet age */}
-                <div className="text-muted" style={{ fontSize: '0.95rem' }}>{pet.age}</div>
-                {/* Pet location */}
-                <div className="favorites-location mb-2">
-                    <span className="me-1" role="img" aria-label="Location">📍</span>
-                    {pet.location}
-                </div>
-
-                {/* Pet details */}
-                <div className="mb-3">
-                    {pet.breed && (
-                        <div className="mb-1">
-                            <strong>Breed:</strong> {pet.breed}
-                        </div>
-                    )}
-                    {pet.gender && (
-                        <div className="mb-1">
-                            <strong>Gender:</strong> {pet.gender}
-                        </div>
-                    )}
-                    {pet.weight && (
-                        <div className="mb-1">
-                            <strong>Weight:</strong> {pet.weight}
-                        </div>
-                    )}
-                    {pet.activity && (
-                        <div className="mb-1">
-                            <strong>Activity Level:</strong> {pet.activity}
-                        </div>
-                    )}
-                </div>
-
-                {/* Apply to Adopt button */}
-                <button className="btn favorites-btn w-100 mb-2">
-                    Apply to Adopt
-                </button>
-                {/* Add/Remove from favorites button */}
-                <button
-                    className={`btn w-100 ${isInFavorites ? 'btn-outline-danger' : 'btn-outline-primary'}`}
-                    onClick={handleAddFavorite}
-                >
-                    {isInFavorites ? 'Remove from Favorites' : 'Add to Favorites'}
-                </button>
-            </div>
-        </div>
-    );
-}
 
 /**
  * Pets component renders the list of all pets in a responsive grid.
@@ -232,7 +150,21 @@ function Pets() {
     if (loading) {
         return (
             <div className="container py-5">
-                <h1 className="favorites-heading">Available Pets</h1>
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                    <h1 className="favorites-heading">Available Pets</h1>
+                    <div className="d-flex gap-2">
+                        <Link to="/pets">
+                            <button className="btn btn-primary" disabled>
+                                🐾 Browse Pets
+                            </button>
+                        </Link>
+                        <Link to="/favorites">
+                            <button className="btn btn-success">
+                                ❤️ My Favorites
+                            </button>
+                        </Link>
+                    </div>
+                </div>
                 <div className="text-center">
                     <div className="spinner-border text-primary" role="status">
                         <span className="visually-hidden">Loading...</span>
@@ -247,7 +179,21 @@ function Pets() {
     if (error) {
         return (
             <div className="container py-5">
-                <h1 className="favorites-heading">Available Pets</h1>
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                    <h1 className="favorites-heading">Available Pets</h1>
+                    <div className="d-flex gap-2">
+                        <Link to="/pets">
+                            <button className="btn btn-primary" disabled>
+                                🐾 Browse Pets
+                            </button>
+                        </Link>
+                        <Link to="/favorites">
+                            <button className="btn btn-success">
+                                ❤️ My Favorites
+                            </button>
+                        </Link>
+                    </div>
+                </div>
                 <div className="alert alert-danger" role="alert">
                     <h4 className="alert-heading">Error Loading Pets</h4>
                     <p>{error}</p>
@@ -267,7 +213,21 @@ function Pets() {
     if (pets.length === 0) {
         return (
             <div className="container py-5">
-                <h1 className="favorites-heading">Available Pets</h1>
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                    <h1 className="favorites-heading">Available Pets</h1>
+                    <div className="d-flex gap-2">
+                        <Link to="/pets">
+                            <button className="btn btn-primary" disabled>
+                                🐾 Browse Pets
+                            </button>
+                        </Link>
+                        <Link to="/favorites">
+                            <button className="btn btn-success">
+                                ❤️ My Favorites
+                            </button>
+                        </Link>
+                    </div>
+                </div>
                 <div className="text-center">
                     <div className="alert alert-info" role="alert">
                         <h4 className="alert-heading">No Pets Available</h4>
@@ -284,16 +244,33 @@ function Pets() {
 
     return (
         <div className="container py-5">
-            {/* Page heading */}
-            <h1 className="favorites-heading">Available Pets</h1>
+            {/* Page heading with navigation buttons */}
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h1 className="favorites-heading">Available Pets</h1>
+                <div className="d-flex gap-2">
+                    <Link to="/pets">
+                        <button className="btn btn-primary" disabled>
+                            🐾 Browse Pets
+                        </button>
+                    </Link>
+                    <Link to="/favorites">
+                        <button className="btn btn-success">
+                            ❤️ My Favorites
+                        </button>
+                    </Link>
+                </div>
+            </div>
+
             <div className="row">
                 {/* Render a PetCard for each pet */}
                 {pets.map((pet) => (
                     <div className="col-md-3 mb-4" key={pet.id}>
                         <PetCard
                             pet={pet}
-                            onAddFavorite={addFavorite}
                             isInFavorites={isPetInFavorites(pet.id)}
+                            onToggleFavorite={addFavorite}
+                            petId={pet.id}
+                            showRemoveButton={false}
                         />
                     </div>
                 ))}
