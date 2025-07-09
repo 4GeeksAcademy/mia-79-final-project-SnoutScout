@@ -4,6 +4,8 @@ from api.utils import generate_sitemap, APIException
 from datetime import datetime
 from flask import Blueprint, request, jsonify
 from .models import db, Favorite, Pet, User
+import os 
+import requests
 
 api = Blueprint('api', __name__)
 
@@ -11,9 +13,36 @@ api = Blueprint('api', __name__)
 @api.route('/pets', methods=['GET'])
 def get_pets():
     """Get all pets"""
-    pets = Pet.query.all()
-    result = [pet.to_dict() for pet in pets]
-    return jsonify({"success": True, "data": result})
+    print ("hello")
+
+    grant_type = "client_credentials"
+    client_id = os.environ.get("PET_FINDER_CLIENT_ID", None)
+    client_secret = os.environ.get ("PET_FINDER_SECRET", None)
+    login_response = requests.post (
+        url = "https://api.petfinder.com/v2/oauth2/token",
+        json = dict (
+            grant_type = grant_type,
+            client_id = client_id,
+            client_secret = client_secret
+        )
+    )
+    body = login_response.json()
+    print (body)
+    bearer_token = f"Bearer {body['access_token']}"
+    animals_response = requests.get (
+        url ="https://api.petfinder.com/v2/animals",
+        headers= dict({
+            "Authorization" : bearer_token,
+            "Content-Type" : "application/json"
+        })
+    )
+    body= animals_response.json()
+    return jsonify(body["animals"]),200
+    
+
+#    pets = Pet.query.all()
+#   result = [pet.to_dict() for pet in pets]
+#   return jsonify({"success": True, "data": result})
 
 # Messages routes
 @api.route('/messages', methods=['GET'])

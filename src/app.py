@@ -17,12 +17,7 @@ app = Flask(__name__)
 
 CORS(
     app,
-    origins=["https://bug-free-train-j7g7vg7p7wp3qvqq-3000.app.github.dev"],
-    supports_credentials=True,
-    allow_headers=["Content-Type", "Authorization"],
-    expose_headers=["Content-Type", "Authorization"],
-    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    send_wildcard=True  
+    origins=["*"]  
 )
 
 
