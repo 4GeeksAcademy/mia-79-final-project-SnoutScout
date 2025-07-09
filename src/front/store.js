@@ -12,9 +12,11 @@ export const initialStore=()=>{
         title: "Do my homework",
         background: null,
       }
-    ]
-  }
-}
+    ],
+    user: null,
+    questioinnaireAnswers: {}
+  };
+};
 
 export default function storeReducer(store, action = {}) {
   switch(action.type){
@@ -32,6 +34,31 @@ export default function storeReducer(store, action = {}) {
         ...store,
         todos: store.todos.map((todo) => (todo.id === id ? { ...todo, background: color } : todo))
       };
+
+      // #store user object
+      case 'set_user':
+      return {
+        ...store,
+        user: action.payload
+      };
+
+      // save an answer to a specific question
+      case 'update_answer':
+        return {
+          ...store,
+          questioinnaireAnswers: {
+            ...store.questioinnaireAnswers,
+            [`question${action.payload.step}`]: action.payload.answer
+          }
+        };
+
+        // reseta all answers
+        case 'clear_answers':
+          return {
+            ...store,
+            questioinnaireAnswers: {}
+          };
+
     default:
       throw Error('Unknown action.');
   }    
