@@ -1,4 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react"
+import { Link } from "react-router-dom";
+import rigoImageUrl from "../assets/img/rigo-baby.jpg";
+import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { useNavigate } from "react-router-dom";
 
 const Home = () => {
@@ -23,17 +26,17 @@ const Home = () => {
     >
       {/* Left Section */}
       <div
-  style={{
-    flex: "1",
-    minWidth: "300px",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",     
-    justifyContent: "center", 
-    textAlign: "center",      
-    padding: "20px"
-  }}>
-          <h1 style={{ fontSize: "30px", fontWeight: "bold", marginBottom: "20px" }}>
+        style={{
+          flex: "1",
+          minWidth: "300px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          textAlign: "center",
+          padding: "20px"
+        }}>
+        <h1 style={{ fontSize: "30px", fontWeight: "bold", marginBottom: "20px" }}>
           Match With the Perfect Pup Near You <br />
           Join SnoutScout Today!
         </h1>
@@ -131,5 +134,7 @@ const Home = () => {
     </section>
   );
 };
+
+
 
 export default Home;

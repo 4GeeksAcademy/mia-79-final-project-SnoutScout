@@ -1,5 +1,6 @@
 // Import necessary components and functions from react-router-dom.
 
+
 import { createBrowserRouter, createRoutesFromElements, Route } from "react-router-dom";
 import { Layout } from "./pages/Layout";
 import Home from "./pages/Home";
@@ -12,7 +13,9 @@ import Question4 from "./pages/Question4";
 import Question5 from "./pages/Question5";
 import Question6 from "./pages/Question6";
 import Question7 from "./pages/Question7";
-import Question8 from "./pages/Question8"
+import Question8 from "./pages/Question8";
+import Favorites from "./pages/Favorites"
+import Pets from "./pages/Pets";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -24,7 +27,7 @@ export const router = createBrowserRouter(
 
     // Root Route: All navigation will start from here.
     <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>} >
-   
+
       {/* Nested Routes: Defines sub-routes within the BaseHome component. */}
       <Route index element={<Home />} />
       <Route path="/messages" element={<Messages />} />
@@ -36,14 +39,15 @@ export const router = createBrowserRouter(
       <Route path="/question6" element={<Question6 />} />
       <Route path="/question7" element={<Question7 />} />
       <Route path="/question8" element={<Question8 />} />
-       <Route path="/find-your-pup" element={<FindYourPup />} />
-
+      <Route path="/find-your-pup" element={<FindYourPup />} />
+      <Route path="/favorites" element={<Favorites />} />
+      <Route path="/pets" element={<Pets />} />
 
 
 
       {/* Dynamic route for single items */}
       {/* <Route path="/demo" element={<Demo />} /> */}
-      
+
     </Route>
   )
 );
