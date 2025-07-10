@@ -1,116 +1,118 @@
-from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, Message  # Added Message import
-from api.utils import generate_sitemap, APIException
-from datetime import datetime
 from flask import Blueprint, request, jsonify
 from .models import db, Favorite, Pet, User
-import os 
-import requests
+from .petfinder_service import PetfinderService
+import json
 
 api = Blueprint('api', __name__)
 
 
 @api.route('/pets', methods=['GET'])
 def get_pets():
-    """Get all pets"""
-    print ("hello")
+    """Get all pets from database"""
+    pets = Pet.query.all()
+    result = [pet.to_dict() for pet in pets]
+    return jsonify({"success": True, "data": result})
 
-    grant_type = "client_credentials"
-    client_id = os.environ.get("PET_FINDER_CLIENT_ID", None)
-    client_secret = os.environ.get ("PET_FINDER_SECRET", None)
-    login_response = requests.post (
-        url = "https://api.petfinder.com/v2/oauth2/token",
-        json = dict (
-            grant_type = grant_type,
-            client_id = client_id,
-            client_secret = client_secret
-        )
-    )
-    body = login_response.json()
-    print (body)
-    bearer_token = f"Bearer {body['access_token']}"
-    animals_response = requests.get (
-        url ="https://api.petfinder.com/v2/animals",
-        headers= dict({
-            "Authorization" : bearer_token,
-            "Content-Type" : "application/json"
-        })
-    )
-    body= animals_response.json()
-    return jsonify(body["animals"]),200
-    
 
-#    pets = Pet.query.all()
-#   result = [pet.to_dict() for pet in pets]
-#   return jsonify({"success": True, "data": result})
-
-# Messages routes
-@api.route('/messages', methods=['GET'])
-def get_messages():
-    current_user_id = request.args.get('user_id', type=int)
-    contact_id = request.args.get('contact_id', type=int)
-    
-    if not current_user_id:
-        return jsonify({"error": "Don't know who you are!"}), 400
-    
-    messages = Message.query.filter(
-        ((Message.message_from == current_user_id) & (Message.message_to == contact_id)) |
-        ((Message.message_from == contact_id) & (Message.message_to == current_user_id))
-    ).order_by(Message.created_at).all()
-    
-    return jsonify([msg.serialize() for msg in messages])
-
-@api.route('/messages', methods=['POST'])
-def create_message():  # Fixed naming
-    data = request.get_json()
-    required_fields = ['message_from', 'message_to', 'content']
-    
-    if not all(field in data for field in required_fields):
-        return jsonify({"error": "Something important is missing"}), 400
-    
+@api.route('/pets/petfinder', methods=['GET'])
+def get_pets_from_petfinder():
+    """Get pets from Petfinder API"""
     try:
-        new_message = Message(
-            message_from=data['message_from'],
-            message_to=data['message_to'],
-            content=data['content'],
-            created_at=datetime.now()
+        # Get query parameters
+        limit = request.args.get('limit', 20, type=int)
+        location = request.args.get('location')
+        animal_type = request.args.get('type')
+        breed = request.args.get('breed')
+        size = request.args.get('size')
+        gender = request.args.get('gender')
+        age = request.args.get('age')
+
+        # Initialize Petfinder service
+        petfinder = PetfinderService()
+
+        # Get animals from Petfinder
+        response = petfinder.get_animals(
+            limit=limit,
+            location=location,
+            animal_type=animal_type,
+            breed=breed,
+            size=size,
+            gender=gender,
+            age=age
         )
-        db.session.add(new_message)
+
+        # Transform Petfinder animals to our format
+        animals = response.get('animals', [])
+        transformed_animals = []
+
+        for animal in animals:
+            transformed_animal = petfinder.transform_petfinder_animal(animal)
+            transformed_animals.append(transformed_animal)
+
+        return jsonify({
+            "success": True,
+            "data": transformed_animals,
+            "pagination": response.get('pagination', {}),
+            "source": "petfinder"
+        })
+
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@api.route('/pets/sync-petfinder', methods=['POST'])
+def sync_pets_from_petfinder():
+    """Sync pets from Petfinder API to local database"""
+    try:
+        # Get query parameters
+        limit = request.args.get('limit', 20, type=int)
+        location = request.args.get('location')
+        animal_type = request.args.get('type')
+
+        # Initialize Petfinder service
+        petfinder = PetfinderService()
+
+        # Get animals from Petfinder
+        response = petfinder.get_animals(
+            limit=limit,
+            location=location,
+            animal_type=animal_type
+        )
+
+        animals = response.get('animals', [])
+        synced_count = 0
+
+        for animal in animals:
+            # Check if pet already exists by petfinder_id
+            existing_pet = Pet.query.filter_by(
+                petfinder_id=str(animal.get('id'))).first()
+
+            if not existing_pet:
+                # Transform and create new pet
+                pet_data = petfinder.transform_petfinder_animal(animal)
+
+                # Convert contact dict to JSON string
+                if pet_data.get('contact'):
+                    pet_data['contact'] = json.dumps(pet_data['contact'])
+
+                pet = Pet(**pet_data)
+                db.session.add(pet)
+                synced_count += 1
+
         db.session.commit()
-        return jsonify(new_message.serialize()), 201
+
+        return jsonify({
+            "success": True,
+            "message": f"Synced {synced_count} new pets from Petfinder",
+            "total_animals": len(animals),
+            "synced_count": synced_count
+        })
+
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Something went wrong: {str(e)}"}), 500
+        return jsonify({"success": False, "error": str(e)}), 500
 
-@api.route('/contacts', methods=['GET'])
-def get_contacts():
-    current_user_id = request.args.get('user_id', type=int)
-    
-    if not current_user_id:
-        return jsonify({"error": "Don't know who you are!"}), 400
-    
-    sent_to = db.session.query(Message.message_to).filter(
-        Message.message_from == current_user_id).distinct()
-    received_from = db.session.query(Message.message_from).filter(
-        Message.message_to == current_user_id).distinct()
 
-    contact_ids = {id for (id,) in sent_to.union_all(received_from)}
-    contacts = User.query.filter(User.id.in_(contact_ids)).all()
-
-    contacts_data = []
-    for contact in contacts:
-        last_message = Message.query.filter(
-            ((Message.message_from == current_user_id) & (Message.message_to == contact.id)) |
-            ((Message.message_from == contact.id) & (Message.message_to == current_user_id))
-        ).order_by(Message.created_at.desc()).first()
-        
-        contacts_data.append({
-            "id": contact.id,
-            "name": contact.name,
-            "last_message": last_message.content if last_message else None,
-        })
-
-    return jsonify(contacts_data)
 @api.route('/pets', methods=['POST'])
 def create_pet():
     """Create a new pet"""
@@ -131,7 +133,14 @@ def create_pet():
         gender=data.get('gender'),
         weight=data.get('weight'),
         breed=data.get('breed'),
-        activity=data.get('activity')
+        activity=data.get('activity'),
+        petfinder_id=data.get('petfinder_id'),
+        description=data.get('description'),
+        status=data.get('status'),
+        organization_id=data.get('organization_id'),
+        url=data.get('url'),
+        published_at=data.get('published_at'),
+        contact=data.get('contact')
     )
 
     db.session.add(pet)
@@ -147,6 +156,25 @@ def get_pet(pet_id):
     if not pet:
         return jsonify({"success": False, "error": "Pet not found"}), 404
     return jsonify({"success": True, "data": pet.to_dict()})
+
+
+@api.route('/pets/<int:pet_id>', methods=['DELETE'])
+def delete_pet(pet_id):
+    """Delete a pet by ID"""
+    pet = Pet.query.get(pet_id)
+    if not pet:
+        return jsonify({"success": False, "error": "Pet not found"}), 404
+
+    # Delete associated favorites first (to maintain referential integrity)
+    favorites = Favorite.query.filter_by(pet_id=pet_id).all()
+    for favorite in favorites:
+        db.session.delete(favorite)
+
+    # Delete the pet
+    db.session.delete(pet)
+    db.session.commit()
+
+    return jsonify({"success": True, "message": "Pet deleted successfully"})
 
 
 @api.route('/favorites', methods=['GET'])

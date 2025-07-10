@@ -24,6 +24,9 @@ export function Navbar() {
             <Nav.Link as={Link} to="/favorites" className="text-white">
               Favorites
             </Nav.Link>
+            <Nav.Link as={Link} to="/socialfeed" className="text-white">
+              Social Feed
+            </Nav.Link>
           </Nav>
           <Button as={Link} to="/signup" variant="outline-light" size="sm">
             Sign Up

@@ -16,6 +16,7 @@ import Question7 from "./pages/Question7";
 import Question8 from "./pages/Question8";
 import Favorites from "./pages/Favorites"
 import Pets from "./pages/Pets";
+import SocialFeed from "./pages/SocialFeed";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -42,6 +43,8 @@ export const router = createBrowserRouter(
       <Route path="/find-your-pup" element={<FindYourPup />} />
       <Route path="/favorites" element={<Favorites />} />
       <Route path="/pets" element={<Pets />} />
+      <Route path="/socialfeed" element={<SocialFeed />} />
+
 
 
 
