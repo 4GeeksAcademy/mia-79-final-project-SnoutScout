@@ -10,7 +10,6 @@ export const Messages = () => {
 
   const apiUrl = import.meta.env.VITE_BACKEND_URL
 
-
   const fetchContacts = async (userId) => {
     const response = await fetch(`${apiUrl}api/contacts?user_id=${userId}`);
     if (!response.ok) console.log("Failed to fetch contacts")
