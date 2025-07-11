@@ -6,7 +6,7 @@ export const ChatBox = ({ messages, currentUser, onSendMessage }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (newMessage.trim()) {
-      conSendMessage(newMessage);
+      onSendMessage(newMessage);
       setNewMessage('');
     }
   };
