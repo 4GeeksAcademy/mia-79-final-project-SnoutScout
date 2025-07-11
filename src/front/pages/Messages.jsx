@@ -11,29 +11,29 @@ export const Messages = () => {
   const apiUrl = import.meta.env.VITE_BACKEND_URL
 
 
-const fetchContacts = async (userId) => {
-  const response = await fetch(`${apiUrl}api/contacts?user_id=${userId}`);
-  if (!response.ok) console.log("Failed to fetch contacts") 
-  return await response.json();
-};
+  const fetchContacts = async (userId) => {
+    const response = await fetch(`${apiUrl}api/contacts?user_id=${userId}`);
+    if (!response.ok) console.log("Failed to fetch contacts")
+    return await response.json();
+  };
 
-const fetchMessages = async (userId, contactId) => {
-  const response = await fetch(`${apiUrl}api/messages?user_id=${userId}&contact_id=${contactId}`);
-  if (!response.ok) console.log('Failed to fetch messages');
-  return await response.json();
-};
+  const fetchMessages = async (userId, contactId) => {
+    const response = await fetch(`${apiUrl}api/messages?user_id=${userId}&contact_id=${contactId}`);
+    if (!response.ok) console.log('Failed to fetch messages');
+    return await response.json();
+  };
 
-const sendMessage = async (message) => {
-  const response = await fetch(`${apiUrl}api/messages`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(message),
-  });
-  if (!response.ok) console.log('Failed to send message');
-  return await response.json();
-};
+  const sendMessage = async (message) => {
+    const response = await fetch(`${apiUrl}api/messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(message),
+    });
+    if (!response.ok) console.log('Failed to send message');
+    return await response.json();
+  };
 
   useEffect(() => {
     const loadData = async () => {
