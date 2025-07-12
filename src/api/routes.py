@@ -61,7 +61,7 @@ def get_messages():
     return jsonify([msg.serialize() for msg in messages])
 
 @api.route('/messages', methods=['POST'])
-def create_message():  # Fixed naming
+def create_message():  
     data = request.get_json()
     required_fields = ['message_from', 'message_to', 'content']
     

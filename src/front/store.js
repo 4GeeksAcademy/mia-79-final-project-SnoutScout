@@ -1,45 +1,54 @@
-export const initialStore=()=>{
-  return{
+export const initialStore = () => {
+  return {
+    currentUser: 0, // represents the logged-in user ID
+    contacts: [],
+    messages: {},
+    activeContact: null,
     pets: [],
-    message: null,
-    todos: [
-      {
-        id: 1,
-        title: "Make the bed",
-        background: null,
-      },
-      {
-        id: 2,
-        title: "Do my homework",
-        background: null,
-      }
-    ]
-  }
-}
+  };
+};
 
 export default function storeReducer(store, action = {}) {
-  switch(action.type){
-    case 'set_hello':
+  switch (action.type) {
+    case "set_current_user":
       return {
         ...store,
-        message: action.payload
+        currentUser: action.payload,
       };
-      
-    case 'add_task':
-
-      const { id,  color } = action.payload
-
+    case "set_contacts":
       return {
         ...store,
-        todos: store.todos.map((todo) => (todo.id === id ? { ...todo, background: color } : todo))
+        contacts: action.payload,
       };
-    case 'set_pets':
+    case "set_messages":
       return {
         ...store,
-        pets: action.payload
-      }
+        messages: {
+          ...store.messages,
+          [action.payload.contactId]: action.payload.messages,
+        },
+      };
+    case "add_message":
+      const { contactId, message } = action.payload;
+      return {
+        ...store,
+        messages: {
+          ...store.messages,
+          [contactId]: [...action(store.messages[contactId] || []), message],
+        },
+      };
+    case "set_active_contact":
+      return {
+        ...store,
+        activeContact: action.payload,
+      };
 
+    case "set_pets":
+      return {
+        ...store,
+        pets: action.payload,
+      };
     default:
-      throw Error('Unknown action.');
-  }    
+      return store;
+  }
 }
