@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { Card, Badge, Button, Modal, ListGroup } from 'react-bootstrap';
 
 export default function DogCard({ dog }) {
+  
   const [showModal, setShowModal] = useState(false);
+
+
 
   return (
     <>
@@ -10,7 +13,7 @@ export default function DogCard({ dog }) {
       <Card style={{ width: '22rem' }} className="mx-4 text-center">
         <Card.Img
           variant="top"
-          src={dog.imgUrl}
+          src={dog.photos[0].large}
           alt={dog.name}
           style={{ cursor: 'pointer' }}
           onClick={() => setShowModal(true)}
@@ -41,13 +44,13 @@ export default function DogCard({ dog }) {
         </Modal.Header>
         <Modal.Body>
           <Card.Img
-            src={dog.imgUrl}
+            src={dog.photos[0].small}
             alt={dog.name}
             className="mb-3 rounded"
           />
           <ListGroup variant="flush">
             <ListGroup.Item><strong>Age:</strong> {dog.age} years</ListGroup.Item>
-            <ListGroup.Item><strong>Location:</strong> {dog.location}</ListGroup.Item>
+            <ListGroup.Item><strong>Location:</strong> {dog.contact?.address?.city}</ListGroup.Item>
             {dog.tags.map(tag => (
               <ListGroup.Item key={tag}>
                 <strong>Tag:</strong> {tag}
@@ -64,3 +67,4 @@ export default function DogCard({ dog }) {
     </>
   );
 }
+

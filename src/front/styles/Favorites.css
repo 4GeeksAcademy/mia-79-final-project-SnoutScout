@@ -1,0 +1,76 @@
+.favorites-heading {
+  font-family: "Fredoka", "Segoe UI", Arial, sans-serif;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  letter-spacing: -1px;
+  color: #ff4f0f;
+}
+
+.favorites-card {
+  border-radius: 1.2rem;
+  background: #fff;
+}
+
+.favorites-img {
+  height: 220px;
+  object-fit: cover;
+  border-radius: 1.2rem 1.2rem 0 0;
+}
+
+.favorites-heart {
+  font-size: 2rem;
+  color: #ff5722;
+  background: #fff;
+  border-radius: 50%;
+  padding: 0.2em 0.4em;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+.favorites-heart:hover {
+  color: #a12802;
+}
+
+.favorites-card-title {
+  font-weight: 700;
+  font-size: 1.2rem;
+  margin-bottom: 0.2rem;
+}
+
+.favorites-location {
+  font-size: 0.97rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.favorites-tags .badge {
+  font-size: 0.85em;
+  margin-right: 0.3em;
+  margin-bottom: 0.2em;
+}
+
+.favorites-btn {
+  background: #19c2ad;
+  color: #fff;
+  font-weight: 500;
+  border-radius: 2em;
+  transition: background 0.18s;
+}
+.favorites-btn:hover {
+  background: #159e8f;
+  color: #fff;
+}
+
+@media (max-width: 991.98px) {
+  .favorites-img {
+    height: 180px;
+  }
+}
+@media (max-width: 767.98px) {
+  .favorites-img {
+    height: 140px;
+  }
+  .favorites-card {
+    margin-bottom: 1.5rem;
+  }
+}
