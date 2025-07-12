@@ -1,9 +1,11 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import String
 from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 db = SQLAlchemy()
+
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -13,10 +15,20 @@ class User(db.Model):
     password = db.Column(String(200), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    questionnaire = db.relationship(
+        "Questionnaire", backref="user", uselist=False)
 
-    questionnaire = db.relationship("Questionnaire", backref="user", uselist=False)
+    def _init_(self, first_name, last_name, email, password):
+        self.first_name = first_name
+        self.last_name = last_name
+        self.email = email
+        self.password = generate_password_hash(password)
 
-def to_dict(self):
+    def check_password(self, password_input):
+        return check_password_hash(self.password, password_input)
+
+
+def serialize (self):
     return {
         "id": self.id,
         "first_name": self.first_name,
@@ -39,7 +51,8 @@ class Questionnaire(db.Model):
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-def to_dict(self):
+
+def seralize (self):
     return {
         "id": self.id,
         "size": self.size,

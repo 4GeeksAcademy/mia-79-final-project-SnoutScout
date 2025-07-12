@@ -58,7 +58,7 @@ const RegisterForm = () => {
         />
 
         <button type="submit" style={styles.button}>
-          Create Account
+          Join Now
         </button>
       </form>
     </div>

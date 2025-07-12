@@ -20,9 +20,9 @@ export const Navbar = () => {
 
 				<div className="d-flex w-100 justify-content-end">
 					<div className="col-auto">
-						<Link to="/register">
+						<Link to="/login">
 							<button className="btn btn-light" style={{ color: "#fd7e14" }}>
-								Join Now
+								Login
 							</button>
 						</Link>
 
