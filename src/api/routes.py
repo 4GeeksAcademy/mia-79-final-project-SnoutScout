@@ -30,13 +30,14 @@ def get_pets():
     print (body)
     bearer_token = f"Bearer {body['access_token']}"
     animals_response = requests.get (
-        url ="https://api.petfinder.com/v2/animals",
+        url ="https://api.petfinder.com/v2/animals?type=Dog",
         headers= dict({
             "Authorization" : bearer_token,
             "Content-Type" : "application/json"
         })
     )
     body= animals_response.json()
+    print (body)
     return jsonify(body["animals"]),200
     
 
@@ -162,6 +163,7 @@ def get_favorites():
 @api.route('/favorites', methods=['POST'])
 def add_favorite():
     data = request.get_json()
+    pet = data.get('pet')
     user_id = data.get('user_id')
     pet_id = data.get('pet_id')
     if not user_id or not pet_id:
@@ -172,6 +174,21 @@ def add_favorite():
         user_id=user_id, pet_id=pet_id).first()
     if existing_favorite:
         return jsonify({"success": False, "error": "Pet is already in favorites"}), 400
+    pet_exists = Pet.query.get(pet_id)
+    if not pet_exists: 
+        new_pet= Pet(
+            id=pet_id, 
+            name=pet["name"], 
+            age=pet['age'], 
+            location=pet['contact']['address']['address1'], 
+            image_url=pet['photos'][0]['full'] if pet ['photos'] else None, 
+            gender=pet['gender'], 
+            breed=pet['breeds']['primary'], 
+            activity=str(pet['tags']))
+        db.session.add(new_pet)
+        db.session.commit()
+        db.session.refresh(new_pet)
+
 
     favorite = Favorite(user_id=user_id, pet_id=pet_id)
     db.session.add(favorite)

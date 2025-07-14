@@ -64,10 +64,16 @@ export default function DogCarousel() {
         ‹
       </Button>
       {!!store.pets && store.pets.length > 1 && (
-        <DogCard dog={store.pets[current]} />
+        <DogCard dog={store.pets[current]} 
+        onFavorite={next}  // advance after a favorite
+        onSkip={next}    
+        />
       )}
 
-      <Button variant="outline-secondary" onClick={next} aria-label="Next" className="ms-3">
+      <Button variant="outline-secondary" 
+      onClick={next} 
+      aria-label="Next" 
+      className="ms-3">
         ›
       </Button>
     </Container>

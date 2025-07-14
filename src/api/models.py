@@ -79,12 +79,12 @@ class Pet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     age = db.Column(db.String(50))
-    location = db.Column(db.String(100))
-    image_url = db.Column(db.String(255))
+    location = db.Column(db.String(256))
+    image_url = db.Column(db.String(512))
     gender = db.Column(db.String(20))
-    weight = db.Column(db.String(50))
+    weight = db.Column(db.String(50), nullable=True)
     breed = db.Column(db.String(100))
-    activity = db.Column(db.String(100))
+    activity = db.Column(db.String(512))
 
     # Relationship to access all favorites for this pet
     favorites = db.relationship(
