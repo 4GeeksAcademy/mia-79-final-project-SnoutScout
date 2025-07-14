@@ -1,11 +1,39 @@
 import React, { useState } from 'react';
 import { Card, Badge, Button, Modal, ListGroup } from 'react-bootstrap';
 
-export default function DogCard({ dog }) {
-  
+export default function DogCard({ dog, onFavorite, onSkip }) { 
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [favorited, setFavorited] = useState(false);
 
+  const handleFavoriteClick = async () => {
+    try {
+    setLoading(true);
+    setFavorited(true);    // flash the heart
+    const token = localStorage.getItem('jwtToken');
 
+    
+      const res = await fetch(import.meta.env.VITE_BACKEND_URL+'api/favorites', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ pet_id: dog.id, user_id: 1, pet: dog }),
+      });
+      if (!res.ok) throw new Error('Failed to favorite');
+    } catch (err) {
+     console.error("Error adding to Favorite");
+      setFavorited(false);
+    }
+    setLoading(false);
+    setFavorited(false);
+    onFavorite?.();        // let parent know to go to next
+  };
+
+  const handleSkipClick = () => {
+    onSkip?.();
+  };
 
   return (
     <>
@@ -31,8 +59,21 @@ export default function DogCard({ dog }) {
             ))}
           </div>
           <div className="d-flex justify-content-center gap-2">
-            <Button variant="outline-danger" aria-label="Favorite">♥</Button>
-            <Button variant="outline-dark">✕</Button>
+            <Button
+              variant={favorited ? 'danger' : 'outline-danger'}
+              aria-label="Favorite"
+              onClick={handleFavoriteClick}
+              disabled={loading}
+            >
+              ♥
+            </Button>
+            <Button
+              variant="outline-dark"
+              onClick={handleSkipClick}
+              disabled={loading}
+            >
+              ✕
+            </Button>
           </div>
         </Card.Body>
       </Card>
