@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, Message  # Added Message import
+from api.models import db, User, Message, Pet  # Added Message import
 from api.utils import generate_sitemap, APIException
 from datetime import datetime
 from flask import Blueprint, request, jsonify
@@ -7,6 +7,7 @@ from .models import db, Favorite, Pet, User
 import os 
 import requests
 from flask_cors import CORS
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 api = Blueprint('api', __name__)
 # Allow CORS requests to this API
@@ -35,9 +36,58 @@ def get_petfinder_token():
         raise Exception(
             "Failed to retrieve Petfinder API token: " + response.text)
 
-    # Route that uses the helper
 
 
+# ===== PET QUESTIONNAIRE =====
+def score_pet_against_questionnaire(pet, questionnaire):
+    score = 0
+    
+    if questionnaire.size and questionnaire.size.lower() in (pet.size or "").lower():
+        score +- 1
+    if questionnaire.activity and questionnaire.activit.lower() in (pet.activity or "").lower():
+        score += 1
+    if questionnaire.locatioin and questionnaire.location.lower() in (pet.location or "").lower():
+        score += 1
+    if questionnaire.other_pets and questionnaire.other_pets.lower() in (pet.other_pets or "").lower():
+        score += 1
+    if questionnaire.hypoallergenic and questionnaire.hypoallergenc.lower() in (pet.hypoallergenic or "").lower():
+        score += 1
+    if questionnaire.gender and questionnaire.gender.lower() in (pet.gender or "").lower():
+        score += 1
+    if questionnaire.yard and questionnaire.yard.lower() in (pet.yard or "").lower():
+        score += 1
+    if questionnaire.owned_pets_before and questionnaire.owned_pets_before.lower() in (pet.owned_pets_before or "").lower():
+        score += 1
+
+        return score
+
+# ===== PET MATCHING ROUTES =====
+@api.route('/match/<int:user_id>', methods=['GET'])
+@jwt_required()
+def mtch_pets(user_id):
+    user = User.query.get(user_id)
+
+    if not user or not user.questionnaire:
+        return jsonify({"error": "User or questionnaire not found"}), 404
+    
+    questionnaire = user.questionnaire
+    pets = Pet.query.all()
+
+    results = []
+
+    scored_pets = []
+    for pet in pets:
+        score = score_pet_against_questionnaire(pet, questionnaire)
+        scored_pets.append({ 
+            "score": score, 
+            "pet": pet.to.dict() 
+            })
+    results.sort(key=lambda x: x["score"], reverse=True)
+
+    return jsonify(results), 200
+
+
+# ===== ZIP CODE ROUTES =====
 @api.route('/shelters/<zip_code>', methods=['GET'])
 def get_shelters(zip_code):
     try:
@@ -51,6 +101,7 @@ def get_shelters(zip_code):
             return jsonify({"error": str(e)}), 500
     
 
+# ===== LOGIN ROUTES =====
 @api.route('/login', methods=['POST'])
 def login_user():
     data = request.get_json()
@@ -100,11 +151,7 @@ def get_pets():
     return jsonify(body["animals"]),200
     
 
-#    pets = Pet.query.all()
-#   result = [pet.to_dict() for pet in pets]
-#   return jsonify({"success": True, "data": result})
 
-# Messages routes
 @api.route('/messages', methods=['GET'])
 def get_messages():
     current_user_id = request.args.get('user_id', type=int)
@@ -119,6 +166,8 @@ def get_messages():
     ).order_by(Message.created_at).all()
     
     return jsonify([msg.serialize() for msg in messages])
+
+
 
 @api.route('/messages', methods=['POST'])
 def create_message():  
@@ -141,6 +190,8 @@ def create_message():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"Something went wrong: {str(e)}"}), 500
+    
+
 
 @api.route('/contacts', methods=['GET'])
 def get_contacts():
@@ -171,6 +222,9 @@ def get_contacts():
         })
 
     return jsonify(contacts_data)
+
+
+
 @api.route('/pets', methods=['POST'])
 def create_pet():
     """Create a new pet"""
@@ -275,4 +329,5 @@ def create_user():
     user = User(username=username, email=email)
     db.session.add(user)
     db.session.commit()
+    
     return jsonify({"success": True, "data": user.to_dict()}), 201
