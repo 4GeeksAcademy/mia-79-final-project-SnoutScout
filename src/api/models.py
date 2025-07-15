@@ -1,21 +1,47 @@
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import String, Boolean  
 from sqlalchemy.orm import Mapped, mapped_column
 from datetime import datetime
 
 db = SQLAlchemy()
 
+
 class User(db.Model):
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[int] = mapped_column(String(50), nullable=True) # for sign up form, make sure to include input for name
-    email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
-    password: Mapped[str] = mapped_column(nullable=False)
-    is_active: Mapped[bool] = mapped_column(Boolean(), nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(String(80), nullable=False)
+    last_name = db.Column(String(80), nullable=False)
+    email = db.Column(String(120), unique=True, nullable=False)
+    password = db.Column(String(200), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    questionnaire = db.relationship(
+        "Questionnaire", backref="user", uselist=False)
+    favorites = db.relationship(
+        'Favorite', back_populates='user', cascade='all, delete-orphan')
+
+    def __init__(self, first_name, last_name, email, password):
+        self.first_name = first_name
+        self.last_name = last_name
+        self.email = email
+        self.password = generate_password_hash(password)
+
+    def check_password(self, password_input):
+        return check_password_hash(self.password, password_input)
+    
+    def serialize (self):
+        return {
+            "id": self.id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "email": self.email,
+            "created_at": self.created_at.isoformat()
+        }
 
 class Favorite(db.Model):
     __tablename__ = 'favorites'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     pet_id = db.Column(db.Integer, db.ForeignKey('pets.id'), nullable=False)
 
     # Relationship to access 
@@ -34,27 +60,6 @@ class Favorite(db.Model):
         }
 # "favorites": [favorite.to_dict() for favorite in self.favorites]
 
-# User model
-class User(db.Model):
-    __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-
-    # Relationship to access a user's favorites
-    favorites = db.relationship(
-        'Favorite', back_populates='user', cascade='all, delete-orphan')
-
-    def __repr__(self):
-        return f'<User {self.id} - {self.username}>'
-
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "username": self.username,
-            "email": self.email,
-            # do not serialize the password, its a security breach
-        }
 
 class Message(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -71,6 +76,36 @@ class Message(db.Model):
             "content": self.content,
             "created_at": self.created_at,
         }
+
+
+class Questionnaire(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    size = db.Column(db.String(50))
+    activity = db.Column(db.String(50))
+    travel = db.Column(db.String(50))
+    other_pets = db.Column(db.String(100))
+    hypoallergenic = db.Column(db.String(10))
+    gender_preference = db.Column(db.String(50))
+    yard = db.Column(db.String(10))
+    owned_pets_before = db.Column(db.String(10))
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+
+    def seralize (self):
+        return {
+            "id": self.id,
+            "size": self.size,
+            "activity": self.activity,
+            "travel": self.travel,
+            "other_pets": self.other_pets,
+            "hypoallergenic": self.hypoallergenic,
+            "gender_preference": self.gender_preference,
+            "yard": self.yard,
+            "owned_pets_before": self.owned_pets_before,
+            "user_id": self.user_id
+        }
+    
               
 
 # Pet model

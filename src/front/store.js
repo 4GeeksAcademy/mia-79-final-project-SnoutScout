@@ -5,6 +5,8 @@ export const initialStore = () => {
     messages: {},
     activeContact: null,
     pets: [],
+     user: null,
+    questioinnaireAnswers: {}
   };
 };
 
@@ -48,6 +50,31 @@ export default function storeReducer(store, action = {}) {
         ...store,
         pets: action.payload,
       };
+
+      // #store user object
+      case 'set_user':
+      return {
+        ...store,
+        user: action.payload
+      };
+
+      // save an answer to a specific question
+      case 'update_answer':
+        return {
+          ...store,
+          questioinnaireAnswers: {
+            ...store.questioinnaireAnswers,
+            [`question${action.payload.step}`]: action.payload.answer
+          }
+        };
+
+        // reseta all answers
+        case 'clear_answers':
+          return {
+            ...store,
+            questioinnaireAnswers: {}
+          };
+
     default:
       return store;
   }

@@ -4,6 +4,7 @@ import rigoImageUrl from "../assets/img/rigo-baby.jpg";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { useNavigate } from "react-router-dom";
 
+
 const Home = () => {
   const [zipCode, setZipCode] = useState("");
   const navigate = useNavigate();
