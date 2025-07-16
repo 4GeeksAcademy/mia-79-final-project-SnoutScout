@@ -13,7 +13,7 @@ export const Navbar = () => {
 					<div className="d-none d-md-flex gap-4">
 						<Link to="/" className="nav-link text-white">Home</Link>
 						<a href="#" className="nav-link text-white">Messages</a>
-						<a href="#" className="nav-link text-white">Browse</a>
+						<a href="#" className="nav-link text-white">SnoutScouter</a>
 						<a href="#" className="nav-link text-white">Favorites</a>
 					</div>
 				</div>

@@ -12,11 +12,34 @@ const RegisterForm = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Creating user:", formData);
-    // You could call your API here
-  };
+    
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}api/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          first_name: formData.first,
+          last_name: formData.last,
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Registration failed");
+      }
+
+    } catch (error) {
+        console.log("Registration error:", error.message);
+      }
+    };
+  
 
   return (
     <div style={styles.container}>
@@ -77,7 +100,7 @@ const styles = {
   form: {
     width: "320px",
     padding: "30px",
-    border: "4px solid #FF6600", // <- use your navbar orange here
+    border: "4px solid #FF6600", 
     borderRadius: "12px",
     display: "flex",
     flexDirection: "column",
