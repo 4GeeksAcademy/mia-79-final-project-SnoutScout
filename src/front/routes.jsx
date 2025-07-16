@@ -4,7 +4,7 @@
 import { createBrowserRouter, createRoutesFromElements, Route } from "react-router-dom";
 import { Layout } from "./pages/Layout";
 import Home from "./pages/Home";
-import { Messages } from "./pages/Messages";
+import { Messages }from "./pages/Messages";
 import FindYourPup from "./pages/FindYourPup"
 import Question1 from "./pages/Question1";
 import Question2 from "./pages/Question2";

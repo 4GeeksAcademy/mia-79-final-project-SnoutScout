@@ -87,6 +87,31 @@ def mtch_pets(user_id):
     return jsonify(results), 200
 
 
+# ======= USER REGISTRATION ROUTES =======
+@api.route('/register', methods=['POST'])
+def register_user():
+    data = request.get_json()
+
+    if not data or not all (k in data for k in ("first_name", "last_name", "email", "password")):
+        return jsonify({"error": "Missing required fields"}), 400
+    
+    existing_user = User.query.filter_by(email=data["email"]).first()
+    if existing_user:
+        return jsonify({"error": "User with this email already exists"}), 400
+    
+    new_user = User(
+        first_name = data["first_name"],
+        last_name=data["last_name"],
+        email=data["email"],
+        password=data["password"]
+    )
+
+    db.session.add(new_user)
+    db.session.commit()
+
+    return jsonify({"message": "User registered successfully", "user": new_user.serialize()}), 201
+
+
 # ===== ZIP CODE ROUTES =====
 @api.route('/shelters/<zip_code>', methods=['GET'])
 def get_shelters(zip_code):
