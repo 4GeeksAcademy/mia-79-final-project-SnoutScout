@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../styles/Favorites.css';
 
 // API base URL
-const API_BASE_URL = 'http://localhost:3001/api';
-
+const API_BASE_URL = `${import.meta.env.VITE_BACKEND_URL}`;
 /**
  * PetCard component 
  * @param {Object} pet - The pet object 
@@ -154,6 +153,7 @@ function Favorites() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                //    'Authorization': `Bearer ${store.token}`
                 },
                 body: JSON.stringify({
                     user_id: userId,
