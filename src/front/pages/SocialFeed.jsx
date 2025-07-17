@@ -5,7 +5,7 @@ import CreatePostModal from '../components/CreatePostModal';
 import '../styles/SocialFeed.css';
 
 // API base URL
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = `${import.meta.env.VITE_BACKEND_URL}api`;
 
 /**
  * SocialFeed component renders a social feed where users can share posts about their dogs
