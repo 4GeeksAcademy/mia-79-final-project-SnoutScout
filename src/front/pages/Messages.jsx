@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import { ChatBox } from "../components/ChatBox";
 import { Contact } from "../components/Contact";
 import useGlobalReducer from '../hooks/useGlobalReducer';
+import { useNavigate } from 'react-router-dom';
 
 export const Messages = () => {
   const { store, dispatch } = useGlobalReducer();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  const navigate = useNavigate();
   const apiUrl = import.meta.env.VITE_BACKEND_URL
 
   const fetchContacts = async (userId) => {
@@ -35,13 +36,14 @@ export const Messages = () => {
   };
 
   useEffect(() => {
+    if (!store.user || !store.token) return navigate("/login");
     const loadData = async () => {
       try {
         // Fetch contacts for current user 
-        const contacts = await fetchContacts(store.currentUser);
+        const contacts = await fetchContacts(store.user.id);
         dispatch({
           type: 'set_contacts',
-          payload: contacts[0]
+          payload: contacts
         });
 
         // Set the first contact as active if not already set 
@@ -59,13 +61,13 @@ export const Messages = () => {
     };
 
     loadData();
-  }, [store.currentUser, dispatch]);
+  }, [store.user]);
 
   useEffect(() => {
     if (store.activeContact) {
       const loadMessages = async () => {
         try {
-          const messages = await fetchMessages(store.currentUser, store.activeContact.id);
+          const messages = await fetchMessages(store.user, store.activeContact.id);
           dispatch({
             type: 'set_messages',
             payload: {
@@ -80,13 +82,13 @@ export const Messages = () => {
 
       loadMessages();
     }
-  }, [store.activeContact, store.currentUser, dispatch]);
+  }, [store.activeContact, store.user]);
 
   const handleSendMessage = async (content) => {
     if (!store.activeContact) return;
 
     const newMessage = {
-      message_from: store.currentUser,
+      message_from: store.user.id,
       message_to: store.activeContact.id,
       content,
       created_at: new Date().toISOString()
@@ -159,7 +161,7 @@ export const Messages = () => {
           {/* ChatBox with messages prop */}
           <ChatBox
             messages={store.messages[store.activeContact.id] || []}
-            currentUser={store.currentUser}
+            currentUser={store.user}
             onSendMessage={handleSendMessage}
           />
         </div>
