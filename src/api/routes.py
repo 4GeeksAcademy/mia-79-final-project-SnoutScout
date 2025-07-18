@@ -4,10 +4,10 @@ from api.utils import generate_sitemap, APIException
 from datetime import datetime
 from flask import Blueprint, request, jsonify
 from .models import db, Favorite, Pet, User
-import os 
+import os
 import requests
 from flask_cors import CORS
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token
 
 api = Blueprint('api', __name__)
 # Allow CORS requests to this API
@@ -37,13 +37,12 @@ def get_petfinder_token():
             "Failed to retrieve Petfinder API token: " + response.text)
 
 
-
 # ===== PET QUESTIONNAIRE =====
 def score_pet_against_questionnaire(pet, questionnaire):
     score = 0
-    
+
     if questionnaire.size and questionnaire.size.lower() in (pet.size or "").lower():
-        score +- 1
+        score + - 1
     if questionnaire.activity and questionnaire.activit.lower() in (pet.activity or "").lower():
         score += 1
     if questionnaire.locatioin and questionnaire.location.lower() in (pet.location or "").lower():
@@ -62,6 +61,8 @@ def score_pet_against_questionnaire(pet, questionnaire):
         return score
 
 # ===== PET MATCHING ROUTES =====
+
+
 @api.route('/match/<int:user_id>', methods=['GET'])
 @jwt_required()
 def mtch_pets(user_id):
@@ -69,7 +70,7 @@ def mtch_pets(user_id):
 
     if not user or not user.questionnaire:
         return jsonify({"error": "User or questionnaire not found"}), 404
-    
+
     questionnaire = user.questionnaire
     pets = Pet.query.all()
 
@@ -78,10 +79,10 @@ def mtch_pets(user_id):
     scored_pets = []
     for pet in pets:
         score = score_pet_against_questionnaire(pet, questionnaire)
-        scored_pets.append({ 
-            "score": score, 
-            "pet": pet.to.dict() 
-            })
+        scored_pets.append({
+            "score": score,
+            "pet": pet.to.dict()
+        })
     results.sort(key=lambda x: x["score"], reverse=True)
 
     return jsonify(results), 200
@@ -92,15 +93,15 @@ def mtch_pets(user_id):
 def register_user():
     data = request.get_json()
 
-    if not data or not all (k in data for k in ("first_name", "last_name", "email", "password")):
+    if not data or not all(k in data for k in ("first_name", "last_name", "email", "password")):
         return jsonify({"error": "Missing required fields"}), 400
-    
+
     existing_user = User.query.filter_by(email=data["email"]).first()
     if existing_user:
         return jsonify({"error": "User with this email already exists"}), 400
-    
+
     new_user = User(
-        first_name = data["first_name"],
+        first_name=data["first_name"],
         last_name=data["last_name"],
         email=data["email"],
         password=data["password"]
@@ -123,8 +124,8 @@ def get_shelters(zip_code):
         response.raise_for_status()  # Raise an error for bad responses
         return jsonify(response.json()), 200
     except Exception as e:
-            return jsonify({"error": str(e)}), 500
-    
+        return jsonify({"error": str(e)}), 500
+
 
 # ===== LOGIN ROUTES =====
 @api.route('/login', methods=['POST'])
@@ -132,77 +133,77 @@ def login_user():
     data = request.get_json()
     if not data or not data.get('email') or not data.get('password'):
         return jsonify({"error": "Email and password are required"}), 400
-    
+
     user = User.query.filter_by(email=data['email']).first()
 
     if not user or not user.check_password(data['password']):
         return jsonify({"error": "Invalid email or password"}), 401
-    
+
+    token = create_access_token(identity=str(user.id))
+
     return jsonify({
         "message": "Login successful",
+        "token": token,
         "user": user.serialize()  # Assuming you have a serialize method in User model
     }), 200
-
-
 
 
 @api.route('/pets', methods=['GET'])
 def get_pets():
     """Get all pets"""
-    print ("hello")
+    print("hello")
 
     grant_type = "client_credentials"
     client_id = os.environ.get("PET_FINDER_CLIENT_ID", None)
-    client_secret = os.environ.get ("PET_FINDER_SECRET", None)
-    login_response = requests.post (
-        url = "https://api.petfinder.com/v2/oauth2/token",
-        json = dict (
-            grant_type = grant_type,
-            client_id = client_id,
-            client_secret = client_secret
+    client_secret = os.environ.get("PET_FINDER_SECRET", None)
+    login_response = requests.post(
+        url="https://api.petfinder.com/v2/oauth2/token",
+        json=dict(
+            grant_type=grant_type,
+            client_id=client_id,
+            client_secret=client_secret
         )
     )
     body = login_response.json()
-    print (body)
+    print(body)
     bearer_token = f"Bearer {body['access_token']}"
-    animals_response = requests.get (
-        url ="https://api.petfinder.com/v2/animals?type=Dog",
-        headers= dict({
-            "Authorization" : bearer_token,
-            "Content-Type" : "application/json"
+    animals_response = requests.get(
+        url="https://api.petfinder.com/v2/animals?type=Dog",
+        headers=dict({
+            "Authorization": bearer_token,
+            "Content-Type": "application/json"
         })
     )
-    body= animals_response.json()
-    print (body)
-    return jsonify(body["animals"]),200
-    
+    body = animals_response.json()
+    print(body)
+    return jsonify(body["animals"]), 200
 
 
 @api.route('/messages', methods=['GET'])
 def get_messages():
     current_user_id = request.args.get('user_id', type=int)
     contact_id = request.args.get('contact_id', type=int)
-    
+
     if not current_user_id:
         return jsonify({"error": "Don't know who you are!"}), 400
-    
+
     messages = Message.query.filter(
         ((Message.message_from == current_user_id) & (Message.message_to == contact_id)) |
-        ((Message.message_from == contact_id) & (Message.message_to == current_user_id))
+        ((Message.message_from == contact_id) &
+         (Message.message_to == current_user_id))
     ).order_by(Message.created_at).all()
-    
+
     return jsonify([msg.serialize() for msg in messages])
 
 
-
 @api.route('/messages', methods=['POST'])
-def create_message():  
+def create_message():
     data = request.get_json()
     required_fields = ['message_from', 'message_to', 'content']
-    
+
     if not all(field in data for field in required_fields):
         return jsonify({"error": "Something important is missing"}), 400
-    
+
     try:
         new_message = Message(
             message_from=data['message_from'],
@@ -216,16 +217,15 @@ def create_message():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"Something went wrong: {str(e)}"}), 500
-    
 
 
 @api.route('/contacts', methods=['GET'])
 def get_contacts():
     current_user_id = request.args.get('user_id', type=int)
-    
+
     if not current_user_id:
         return jsonify({"error": "Don't know who you are!"}), 400
-    
+
     sent_to = db.session.query(Message.message_to).filter(
         Message.message_from == current_user_id).distinct()
     received_from = db.session.query(Message.message_from).filter(
@@ -238,9 +238,10 @@ def get_contacts():
     for contact in contacts:
         last_message = Message.query.filter(
             ((Message.message_from == current_user_id) & (Message.message_to == contact.id)) |
-            ((Message.message_from == contact.id) & (Message.message_to == current_user_id))
+            ((Message.message_from == contact.id) &
+             (Message.message_to == current_user_id))
         ).order_by(Message.created_at.desc()).first()
-        
+
         contacts_data.append({
             "id": contact.id,
             "name": contact.name,
@@ -248,7 +249,6 @@ def get_contacts():
         })
 
     return jsonify(contacts_data)
-
 
 
 @api.route('/pets', methods=['POST'])
@@ -314,20 +314,19 @@ def add_favorite():
     if existing_favorite:
         return jsonify({"success": False, "error": "Pet is already in favorites"}), 400
     pet_exists = Pet.query.get(pet_id)
-    if not pet_exists: 
-        new_pet= Pet(
-            id=pet_id, 
-            name=pet["name"], 
-            age=pet['age'], 
-            location=pet['contact']['address']['address1'], 
-            image_url=pet['photos'][0]['full'] if pet ['photos'] else None, 
-            gender=pet['gender'], 
-            breed=pet['breeds']['primary'], 
+    if not pet_exists:
+        new_pet = Pet(
+            id=pet_id,
+            name=pet["name"],
+            age=pet['age'],
+            location=pet['contact']['address']['address1'],
+            image_url=pet['photos'][0]['full'] if pet['photos'] else None,
+            gender=pet['gender'],
+            breed=pet['breeds']['primary'],
             activity=str(pet['tags']))
         db.session.add(new_pet)
         db.session.commit()
         db.session.refresh(new_pet)
-
 
     favorite = Favorite(user_id=user_id, pet_id=pet_id)
     db.session.add(favorite)
@@ -371,5 +370,5 @@ def create_user():
     user = User(username=username, email=email)
     db.session.add(user)
     db.session.commit()
-    
+
     return jsonify({"success": True, "data": user.to_dict()}), 201

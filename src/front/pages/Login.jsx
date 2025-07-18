@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import useGlobalReducer from "../hooks/useGlobalReducer";
 
 const Login = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState(null);
+  const { store, dispatch } = useGlobalReducer();
 
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -13,7 +15,7 @@ const Login = () => {
     e.preventDefault();
     setError(null);
     try {
-      const res = await fetch("/api/login", {
+      const res = await fetch(`${store.BASE_API_URL}api/login`, { // https://cautious-winner....3001/api/login
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -22,6 +24,14 @@ const Login = () => {
       if (!res.ok) throw new Error("Invalid credentials");
 
       const data = await res.json();
+      // data.token data.user
+      dispatch({
+        type: "set_user",
+        payload: {
+          user: data.user,
+          token: data.token
+        }
+      });
       console.log("Logged in:", data);
       navigate("/");
     } catch (err) {
