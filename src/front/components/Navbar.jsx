@@ -11,6 +11,7 @@ export const Navbar = () => {
 				<h1 className="navbar-brand fs-1 fw-bold">SnoutScout</h1>
 				<div className="d-flex flex-grow-1 justify-content-center">
 					<div className="d-none d-md-flex gap-4">
+
 						<Link to="/" className="nav-link text-white">Home</Link>
 						<Link to="/messages" className="nav-link text-white">Messages</Link>
 						<Link to="/snoutscouter" className="nav-link text-white">SnoutScouter</Link>
