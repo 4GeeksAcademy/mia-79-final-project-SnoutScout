@@ -29,7 +29,7 @@ class User(db.Model):
     def check_password(self, password_input):
         return check_password_hash(self.password, password_input)
     
-    def serialize (self):
+    def to_dict (self):
         return {
             "id": self.id,
             "first_name": self.first_name,

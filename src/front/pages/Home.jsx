@@ -126,7 +126,7 @@ const Home = () => {
             objectFit: "cover",
             borderRadius: "20px",
             position: "absolute",
-            bottom: "10px",
+            bottom: "20px",
             right: "50px",
             zIndex: 1,
           }}
