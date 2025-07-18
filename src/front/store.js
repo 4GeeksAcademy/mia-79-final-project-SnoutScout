@@ -1,11 +1,17 @@
 export const initialStore = () => {
+  // check if the user is logged in
+  let user = localStorage.getItem("user");
+  if (user !== null) user = JSON.parse(user);
+  let token = localStorage.getItem("token");
+  if (token === null) token = undefined;
   return {
     currentUser: 0, // represents the logged-in user ID
     contacts: [],
     messages: {},
     activeContact: null,
     pets: [],
-     user: null,
+    user: null,
+    token: undefined,
     questioinnaireAnswers: {}
   };
 };
@@ -55,7 +61,8 @@ export default function storeReducer(store, action = {}) {
       case 'set_user':
       return {
         ...store,
-        user: action.payload
+        user: action.payload.user,
+        token: action.payload.token,
       };
 
       // save an answer to a specific question

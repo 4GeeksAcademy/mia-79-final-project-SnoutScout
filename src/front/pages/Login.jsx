@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import useGlobalReducer from "../hooks/useGlobalReducer";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -22,6 +23,14 @@ const Login = () => {
       if (!res.ok) throw new Error("Invalid credentials");
 
       const data = await res.json();
+      // data.token data.user
+      dispatchEvent({
+        type: "authenticate",
+        payload: {
+          user: data.user,
+          token: data.token,
+        },
+      })
       console.log("Logged in:", data);
       navigate("/");
     } catch (err) {

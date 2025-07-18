@@ -8,6 +8,8 @@ import os
 import requests
 from flask_cors import CORS
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from werkzeug.security import generate_password_hash, check_password_hash
+
 
 api = Blueprint('api', __name__)
 # Allow CORS requests to this API
@@ -140,6 +142,7 @@ def login_user():
     
     return jsonify({
         "message": "Login successful",
+        "token": token;
         "user": user.serialize()  # Assuming you have a serialize method in User model
     }), 200
 
@@ -355,20 +358,24 @@ def get_users():
 
 @api.route('/users', methods=['POST'])
 def create_user():
-    """Create a new user"""
+    # ========== Create a new user =========
     data = request.get_json()
     username = data.get('username')
     email = data.get('email')
+    password = data.get('password')
 
-    if not username or not email:
-        return jsonify({"success": False, "error": "username and email required"}), 400
+    if not username or not email or not password:
+        return jsonify({"success": False, "error": "username, email and password are required"}), 400
 
-    # Check if user already exists
+    # ===== CHECK IF USER ALREADY EXISTS ======
     existing_user = User.query.filter_by(email=email).first()
     if existing_user:
         return jsonify({"success": False, "error": "User with this email already exists"}), 400
+    
+    # ===== HASH THE PASSWORD =====
+    hashed_password = generate_password_hash(password)
 
-    user = User(username=username, email=email)
+    user = User(username=username, email=email, hashed_password=hashed_password)
     db.session.add(user)
     db.session.commit()
     
