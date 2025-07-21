@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const RegisterForm = () => {
-  const { store, dispatch } = useGlobalReducer();
+  const { store } = useGlobalReducer();
   const [formData, setFormData] = useState({
     first: "",
     last: "",
@@ -11,6 +11,7 @@ const RegisterForm = () => {
     password: "",
   });
   const navigate = useNavigate();
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -37,13 +38,18 @@ const RegisterForm = () => {
       if (!response.ok) {
         throw new Error(data.error || "Registration failed");
       }
-      navigate("/login");
+
+      if (data.token) {
+        sessionStorage.setItem("token", data.token);
+        dispatchEvent({ type: "setToken", payload: data.token });
+      }
+
+      navigate("/question1"); // Redirect to the first question page
     } catch (error) {
-      console.log("Registration error:", error.message);
+      console.error("Registration error:", error.message);
     }
   };
-
-
+ 
   return (
     <div style={styles.container}>
       <form style={styles.form} onSubmit={handleSubmit}>
@@ -86,12 +92,18 @@ const RegisterForm = () => {
         <button type="submit" style={styles.button}>
           Join Now
         </button>
+
+        <p style={styles.loginText}>
+          Already have an account?{" "}
+          <Link to="/login" style={styles.loginLink}>
+            Log in
+          </Link>
+        </p>
       </form>
     </div>
   );
 };
 
-// Adjust the border color to match your navbar orange
 const styles = {
   container: {
     minHeight: "100vh",
@@ -135,6 +147,16 @@ const styles = {
     borderRadius: "6px",
     cursor: "pointer",
     textTransform: "uppercase",
+  },
+  loginText: {
+    textAlign: "center",
+    fontSize: "14px",
+    color: "#555",
+  },
+  loginLink: {
+    color: "#FF6600",
+    fontWeight: "bold",
+    textDecoration: "none",
   },
 };
 

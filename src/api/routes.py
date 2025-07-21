@@ -44,7 +44,7 @@ def score_pet_against_questionnaire(pet, questionnaire):
     score = 0
 
     if questionnaire.size and questionnaire.size.lower() in (pet.size or "").lower():
-        score + - 1
+        score += 1
     if questionnaire.activity and questionnaire.activit.lower() in (pet.activity or "").lower():
         score += 1
     if questionnaire.locatioin and questionnaire.location.lower() in (pet.location or "").lower():
