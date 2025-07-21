@@ -98,19 +98,17 @@ function PostCard({ post, onDelete, onToggleLike, onAddComment, onDeleteComment 
                         <span className="post-time">{formatDate(post.created_at)}</span>
                     </div>
                 </div>
-                {post.user?.id === 1 && (
-                    <button
-                        className="post-delete-btn"
-                        onClick={() => {
-                            if (window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
-                                onDelete(post.id);
-                            }
-                        }}
-                        title="Delete post"
-                    >
-                        <span className="delete-icon">×</span>
-                    </button>
-                )}
+                <button
+                    className="post-delete-btn"
+                    onClick={() => {
+                        if (window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+                            onDelete(post.id);
+                        }
+                    }}
+                    title="Delete post"
+                >
+                    <span className="delete-icon">×</span>
+                </button>
             </div>
 
             {/* Post Image */}
