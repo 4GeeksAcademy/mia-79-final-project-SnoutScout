@@ -80,12 +80,20 @@ function PostCard({ post, onDelete, onToggleLike, onAddComment, onDeleteComment 
     // Format date
     const formatDate = (dateString) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        // Convert to local timezone
+        const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+
+        return localDate.toLocaleDateString() + ' ' + localDate.toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZoneName: 'short'
+        });
     };
 
     return (
         <div className="post-card">
-            {/* Post Header */}
+
             <div className="post-header">
                 <div className="post-user-info">
                     <div className="post-avatar">
