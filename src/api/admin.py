@@ -1,6 +1,6 @@
 import os
 from flask_admin import Admin
-from .models import db, User, Pet, Favorite
+from .models import db, User, Pet, Favorite, Post
 from flask_admin.contrib.sqla import ModelView
 
 
@@ -9,10 +9,8 @@ def setup_admin(app):
     app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
     admin = Admin(app, name='4Geeks Admin', template_mode='bootstrap3')
 
-   
     admin.add_view(ModelView(User, db.session))
     # admin.add_view(ModelView(Message, db.session))
     admin.add_view(ModelView(Pet, db.session))
     admin.add_view(ModelView(Favorite, db.session))
-
- 
+    admin.add_view(ModelView(Post, db.session))
