@@ -298,6 +298,26 @@ def get_favorites():
     result = [fav.to_dict() for fav in favorites]
     return jsonify({"success": True, "data": result})
 
+@api.route('/favorite', methods=['GET'])
+def get_test():
+    user_id = 1
+    if not user_id:
+        return jsonify({"success": False, "error": "user_id is required"}), 400
+    
+    try:
+        favorites = Favorite.query.options(db.joinedload(Favorite.pet)).filter_by(user_id=user_id).all()
+        result = [fav.to_dict() for fav in favorites]
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": "Internal server error"}), 500
+
+
+
+
+
+
+
+
 
 @api.route('/favorites', methods=['POST'])
 def add_favorite():
