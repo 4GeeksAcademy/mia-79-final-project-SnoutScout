@@ -2,14 +2,12 @@ from flask import Blueprint, request, jsonify
 from .models import db, Post, PostLike, PostComment, User
 from datetime import datetime
 
-# Create a new blueprint for social feed routes
-social_bp = Blueprint('social', __name__, url_prefix='/api/social')
 
-# Helper function to get current user (for demo purposes, using user_id=1)
+social_bp = Blueprint('social', __name__, url_prefix='/api/social')
 
 
 def get_current_user_id():
-    # In a real app, this would come from authentication
+
     return 1
 
 # GET /api/social/posts - Get all posts
@@ -20,14 +18,13 @@ def get_posts():
     try:
         current_user_id = get_current_user_id()
 
-        # Get all posts with user info, ordered by newest first
+        # Get all posts
         posts = Post.query.order_by(Post.created_at.desc()).all()
 
-        # Convert to dict and check if current user liked each post
         posts_data = []
         for post in posts:
             post_dict = post.to_dict()
-            # Check if current user liked this post
+
             like = PostLike.query.filter_by(
                 user_id=current_user_id, post_id=post.id).first()
             post_dict['is_liked_by_current_user'] = like is not None
@@ -44,7 +41,7 @@ def get_posts():
             "error": str(e)
         }), 500
 
-# POST /api/social/posts - Create a new post
+# Create a new post
 
 
 @social_bp.route('/posts', methods=['POST'])
@@ -52,7 +49,6 @@ def create_post():
     try:
         data = request.get_json()
 
-        # Validate required fields
         if not data.get('title') or not data.get('content'):
             return jsonify({
                 "success": False,
@@ -84,7 +80,7 @@ def create_post():
             "error": str(e)
         }), 500
 
-# DELETE /api/social/posts/<post_id> - Delete a post
+# Delete a post
 
 
 @social_bp.route('/posts/<int:post_id>', methods=['DELETE'])
@@ -107,7 +103,7 @@ def delete_post(post_id):
                 "error": "You can only delete your own posts"
             }), 403
 
-        # Delete the post (cascade will handle likes and comments)
+        # Delete the post
         db.session.delete(post)
         db.session.commit()
 
@@ -123,7 +119,7 @@ def delete_post(post_id):
             "error": str(e)
         }), 500
 
-# POST /api/social/posts/<post_id>/like - Like/unlike a post
+#  Like/unlike a post
 
 
 @social_bp.route('/posts/<int:post_id>/like', methods=['POST'])
@@ -170,7 +166,7 @@ def toggle_post_like(post_id):
             "error": str(e)
         }), 500
 
-# GET /api/social/posts/<post_id>/comments - Get comments for a post
+# Get comments for a post
 
 
 @social_bp.route('/posts/<int:post_id>/comments', methods=['GET'])
@@ -184,7 +180,7 @@ def get_post_comments(post_id):
                 "error": "Post not found"
             }), 404
 
-        # Get comments ordered by newest first
+        # Get comments
         comments = PostComment.query.filter_by(post_id=post_id).order_by(
             PostComment.created_at.desc()).all()
 
@@ -199,7 +195,7 @@ def get_post_comments(post_id):
             "error": str(e)
         }), 500
 
-# POST /api/social/posts/<post_id>/comments - Add a comment to a post
+# Add a comment to a post
 
 
 @social_bp.route('/posts/<int:post_id>/comments', methods=['POST'])
@@ -207,7 +203,6 @@ def add_post_comment(post_id):
     try:
         data = request.get_json()
 
-        # Validate required fields
         if not data.get('content'):
             return jsonify({
                 "success": False,
@@ -246,7 +241,7 @@ def add_post_comment(post_id):
             "error": str(e)
         }), 500
 
-# DELETE /api/social/comments/<comment_id> - Delete a comment
+# Delete a comment
 
 
 @social_bp.route('/comments/<int:comment_id>', methods=['DELETE'])
@@ -254,7 +249,6 @@ def delete_comment(comment_id):
     try:
         current_user_id = get_current_user_id()
 
-        # Find the comment
         comment = PostComment.query.get(comment_id)
         if not comment:
             return jsonify({
@@ -262,7 +256,6 @@ def delete_comment(comment_id):
                 "error": "Comment not found"
             }), 404
 
-        # Check if user owns the comment
         if comment.user_id != current_user_id:
             return jsonify({
                 "success": False,
