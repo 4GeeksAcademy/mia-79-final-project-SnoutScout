@@ -1,22 +1,25 @@
 import React, { useState } from "react";
+import useGlobalReducer from "../hooks/useGlobalReducer";
+import { useNavigate } from "react-router-dom";
 
 const RegisterForm = () => {
+  const { store, dispatch } = useGlobalReducer();
   const [formData, setFormData] = useState({
     first: "",
     last: "",
     email: "",
     password: "",
   });
-
+  const navigate = useNavigate();
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}api/register`, {
+      const response = await fetch(`${store.BASE_API_URL}api/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -34,12 +37,12 @@ const RegisterForm = () => {
       if (!response.ok) {
         throw new Error(data.error || "Registration failed");
       }
-
+      navigate("/login");
     } catch (error) {
-        console.log("Registration error:", error.message);
-      }
-    };
-  
+      console.log("Registration error:", error.message);
+    }
+  };
+
 
   return (
     <div style={styles.container}>
@@ -100,7 +103,7 @@ const styles = {
   form: {
     width: "320px",
     padding: "30px",
-    border: "4px solid #FF6600", 
+    border: "4px solid #FF6600",
     borderRadius: "12px",
     display: "flex",
     flexDirection: "column",
