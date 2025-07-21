@@ -112,7 +112,7 @@ def register_user():
     db.session.add(new_user)
     db.session.commit()
 
-    return jsonify({"message": "User registered successfully", "user": new_user.serialize()}), 201
+    return jsonify({"message": "User registered successfully", "user": new_user.to_dict()}), 201
 
 
 # ===== ZIP CODE ROUTES =====
@@ -146,15 +146,13 @@ def login_user():
     return jsonify({
         "message": "Login successful",
         "token": token,
-        "user": user.serialize()  # Assuming you have a serialize method in User model
+        "user": user.to_dict()  # Assuming you have a serialize method in User model
     }), 200
 
 
 @api.route('/pets', methods=['GET'])
 def get_pets():
     """Get all pets"""
-    print("hello")
-
     grant_type = "client_credentials"
     client_id = os.environ.get("PET_FINDER_CLIENT_ID", None)
     client_secret = os.environ.get("PET_FINDER_SECRET", None)
@@ -167,7 +165,6 @@ def get_pets():
         )
     )
     body = login_response.json()
-    print(body)
     bearer_token = f"Bearer {body['access_token']}"
     animals_response = requests.get(
         url="https://api.petfinder.com/v2/animals?type=Dog",
@@ -177,7 +174,6 @@ def get_pets():
         })
     )
     body = animals_response.json()
-    print(body)
     return jsonify(body["animals"]), 200
 
 
@@ -195,7 +191,7 @@ def get_messages():
          (Message.message_to == current_user_id))
     ).order_by(Message.created_at).all()
 
-    return jsonify([msg.serialize() for msg in messages])
+    return jsonify([msg.to_dict() for msg in messages])
 
 
 @api.route('/messages', methods=['POST'])
@@ -215,7 +211,7 @@ def create_message():
         )
         db.session.add(new_message)
         db.session.commit()
-        return jsonify(new_message.serialize()), 201
+        return jsonify(new_message.to_dict()), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"Something went wrong: {str(e)}"}), 500
@@ -300,25 +296,20 @@ def get_favorites():
     result = [fav.to_dict() for fav in favorites]
     return jsonify({"success": True, "data": result})
 
+
 @api.route('/favorite', methods=['GET'])
 def get_test():
     user_id = 1
     if not user_id:
         return jsonify({"success": False, "error": "user_id is required"}), 400
-    
+
     try:
-        favorites = Favorite.query.options(db.joinedload(Favorite.pet)).filter_by(user_id=user_id).all()
+        favorites = Favorite.query.options(db.joinedload(
+            Favorite.pet)).filter_by(user_id=user_id).all()
         result = [fav.to_dict() for fav in favorites]
         return jsonify({"success": True, "data": result})
     except Exception as e:
         return jsonify({"success": False, "error": "Internal server error"}), 500
-
-
-
-
-
-
-
 
 
 @api.route('/favorites', methods=['POST'])
@@ -389,11 +380,12 @@ def create_user():
     existing_user = User.query.filter_by(email=email).first()
     if existing_user:
         return jsonify({"success": False, "error": "User with this email already exists"}), 400
-    
+
     # ===== HASH THE PASSWORD =====
     hashed_password = generate_password_hash(password)
 
-    user = User(username=username, email=email, hashed_password=hashed_password)
+    user = User(username=username, email=email,
+                hashed_password=hashed_password)
     db.session.add(user)
     db.session.commit()
 

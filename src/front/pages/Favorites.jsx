@@ -94,7 +94,7 @@ function Favorites() {
             setError(null);
 
 
-            const response = await fetch(`${API_BASE_URL}/api/favorite`);
+            const response = await fetch(`${API_BASE_URL}api/favorite`);
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -118,7 +118,7 @@ function Favorites() {
     // Remove a pet from favorites
     const removeFavorite = async (favoriteId) => {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/favorites/${favoriteId}`, {
+            const response = await fetch(`${API_BASE_URL}api/favorites/${favoriteId}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
@@ -149,7 +149,7 @@ function Favorites() {
     // Add a pet to favorites (for future use)
     const addFavorite = async (userId, petId) => {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/favorites`, {
+            const response = await fetch(`${API_BASE_URL}api/favorites`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

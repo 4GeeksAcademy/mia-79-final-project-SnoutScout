@@ -34,7 +34,7 @@ export default function DogCarousel() {
   const [current, setCurrent] = useState(0);
   const { store, dispatch } = useGlobalReducer();
   const PetAuth = async () => {
-    const url = `${import.meta.env.VITE_BACKEND_URL}/api/pets`;
+    const url = `${import.meta.env.VITE_BACKEND_URL}api/pets`;
     const result = await fetch(url, {
       method: "GET",
       headers: {

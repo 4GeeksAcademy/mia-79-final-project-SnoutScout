@@ -13,7 +13,7 @@ export default function DogCard({ dog, onFavorite, onSkip }) {
     const token = localStorage.getItem('jwtToken');
 
     
-      const res = await fetch(import.meta.env.VITE_BACKEND_URL+'/api/favorites', {
+      const res = await fetch(import.meta.env.VITE_BACKEND_URL+'api/favorites', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
