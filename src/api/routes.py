@@ -3,7 +3,7 @@ from api.models import db, User, Message, Pet  # Added Message import
 from api.utils import generate_sitemap, APIException
 from datetime import datetime
 from flask import Blueprint, request, jsonify
-from .models import db, Favorite, Pet, User
+from .models import db, Favorite, Pet, User, Questionnaire
 import os
 import requests
 from flask_cors import CORS
@@ -43,24 +43,24 @@ def get_petfinder_token():
 def score_pet_against_questionnaire(pet, questionnaire):
     score = 0
 
-    if questionnaire.size and questionnaire.size.lower() in (pet.size or "").lower():
+    if questionnaire.size and questionnaire.size.lower() in (pet["size"] or "").lower():
         score + - 1
-    if questionnaire.activity and questionnaire.activit.lower() in (pet.activity or "").lower():
+    if questionnaire.activity and questionnaire.activity.lower() in (pet["activity"] or "").lower():
         score += 1
-    if questionnaire.locatioin and questionnaire.location.lower() in (pet.location or "").lower():
+    if questionnaire.location and questionnaire.location.lower() in (pet["location"] or "").lower():
         score += 1
-    if questionnaire.other_pets and questionnaire.other_pets.lower() in (pet.other_pets or "").lower():
+    if questionnaire.other_pets and questionnaire.other_pets.lower() in (pet["other_pets"] or "").lower():
         score += 1
-    if questionnaire.hypoallergenic and questionnaire.hypoallergenc.lower() in (pet.hypoallergenic or "").lower():
+    if questionnaire.hypoallergenic and questionnaire.hypoallergenic.lower() in (pet["hypoallergenic"] or "").lower():
         score += 1
-    if questionnaire.gender and questionnaire.gender.lower() in (pet.gender or "").lower():
+    if questionnaire.gender and questionnaire.gender.lower() in (pet["gender"] or "").lower():
         score += 1
-    if questionnaire.yard and questionnaire.yard.lower() in (pet.yard or "").lower():
+    if questionnaire.yard and questionnaire.yard.lower() in (pet["yard"] or "").lower():
         score += 1
-    if questionnaire.owned_pets_before and questionnaire.owned_pets_before.lower() in (pet.owned_pets_before or "").lower():
+    if questionnaire.owned_pets_before and questionnaire.owned_pets_before.lower() in (pet["owned_pets_before"] or "").lower():
         score += 1
 
-        return score
+    return score
 
 # ===== PET MATCHING ROUTES =====
 
@@ -111,8 +111,12 @@ def register_user():
 
     db.session.add(new_user)
     db.session.commit()
+    token = create_access_token(identity=str(new_user.id))
 
-    return jsonify({"message": "User registered successfully", "user": new_user.to_dict()}), 201
+    return jsonify({
+        "token": token,
+        "user": new_user.to_dict()
+    }), 201
 
 
 # ===== ZIP CODE ROUTES =====
@@ -151,6 +155,7 @@ def login_user():
 
 
 @api.route('/pets', methods=['GET'])
+@jwt_required()
 def get_pets():
     """Get all pets"""
     grant_type = "client_credentials"
@@ -174,7 +179,34 @@ def get_pets():
         })
     )
     body = animals_response.json()
-    return jsonify(body["animals"]), 200
+    animals = body["animals"]
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+    if not user or not user.questionnaire:
+        return jsonify({"error": "User or questionnaire not found"}), 404
+    questionnaire = user.questionnaire
+    current_favorites = user.favorites
+    current_favorite_ids_set = set(
+        [favorite.pet.petfinder_id for favorite in current_favorites])
+    # {77451, 2731, 77462, 8823}
+    animals = list(filter(
+        lambda pet: not set([pet["id"]]).issubset(current_favorite_ids_set),
+        animals
+    ))
+    print(">>> animals without favorites", len(animals))
+    # here is where dogs from petfinder will be filtered
+    # or scored based on the question answers for this user
+    # and the dogs information from petfinder
+    # scored_pets = []
+    # for pet in animals:
+    #     score = score_pet_against_questionnaire(pet, questionnaire)
+    #     scored_pets.append({
+    #         "score": score,
+    #         "pet": pet
+    #     })
+    # scored_pets.sort(key=lambda x: x["score"], reverse=True)
+
+    return jsonify(animals), 200
 
 
 @api.route('/messages', methods=['GET'])
@@ -313,10 +345,11 @@ def get_test():
 
 
 @api.route('/favorites', methods=['POST'])
+@jwt_required()
 def add_favorite():
     data = request.get_json()
     pet = data.get('pet')
-    user_id = data.get('user_id')
+    user_id = int(get_jwt_identity())
     pet_id = data.get('pet_id')
     if not user_id or not pet_id:
         return jsonify({"success": False, "error": "user_id and pet_id required"}), 400
@@ -329,7 +362,7 @@ def add_favorite():
     pet_exists = Pet.query.get(pet_id)
     if not pet_exists:
         new_pet = Pet(
-            id=pet_id,
+            petfinder_id=pet_id,
             name=pet["name"],
             age=pet['age'],
             location=pet['contact']['address']['address1'],
@@ -341,7 +374,7 @@ def add_favorite():
         db.session.commit()
         db.session.refresh(new_pet)
 
-    favorite = Favorite(user_id=user_id, pet_id=pet_id)
+    favorite = Favorite(user_id=user_id, pet_id=new_pet.id)
     db.session.add(favorite)
     db.session.commit()
     return jsonify({"success": True, "data": favorite.to_dict()}), 201
@@ -390,3 +423,27 @@ def create_user():
     db.session.commit()
 
     return jsonify({"success": True, "data": user.to_dict()}), 201
+
+
+@api.route("/questionnaire", methods=["POST"])
+@jwt_required()
+def create_user_questionnaire():
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+    if user is None:
+        return "no such user 😐", 404
+    data = request.json
+    questionnaire = Questionnaire(
+        user_id=user_id,
+        size=data["size"],
+        activity=data["activity"],
+        travel=data["travel"],
+        other_pets=data["other_pets"],
+        hypoallergenic=data["hypoallergenic"],
+        gender_preference=data["gender_preference"],
+        yard=data["yard"],
+        owned_pets_before=data["owned_pets_before"]
+    )
+    db.session.add(questionnaire)
+    db.session.commit()
+    return jsonify(questionnaire.to_dict()), 201

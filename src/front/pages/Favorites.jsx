@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/Favorites.css';
+import useGlobalReducer from '../hooks/useGlobalReducer';
 
 // API base URL
 const API_BASE_URL = `${import.meta.env.VITE_BACKEND_URL}`;
@@ -86,7 +87,7 @@ function Favorites() {
     const [favorites, setFavorites] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-
+    const { store, dispatch } = useGlobalReducer();
     // Fetch favorites 
     const fetchFavorites = async () => {
         try {
@@ -153,7 +154,7 @@ function Favorites() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    //    'Authorization': `Bearer ${store.token}`
+                    'Authorization': `Bearer ${store.token}`
                 },
                 body: JSON.stringify({
                     user_id: userId,

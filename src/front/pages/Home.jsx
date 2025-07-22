@@ -8,12 +8,15 @@ import { useNavigate } from "react-router-dom";
 const Home = () => {
   const [zipCode, setZipCode] = useState("");
   const navigate = useNavigate();
-
+  const { store, dispatch } = useGlobalReducer();
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!zipCode.trim()) return alert("Please enter your Zip Code");
     navigate("/question1", { state: { zipCode } });
   };
+  useEffect(() => {
+    if (!!store.token) return navigate("/find-your-pup");
+  }, [store.token]);
 
   return (
     <section
