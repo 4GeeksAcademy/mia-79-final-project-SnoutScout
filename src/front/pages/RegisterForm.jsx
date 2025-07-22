@@ -37,6 +37,17 @@ const RegisterForm = () => {
       if (!response.ok) {
         throw new Error(data.error || "Registration failed");
       }
+      const payload = store.questionnaireAnswers;
+      const questionnaireResponse = await fetch(
+        `${store.BASE_API_URL}api/questionnaire`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${data.token}`
+        }
+      }
+      );
       navigate("/login");
     } catch (error) {
       console.log("Registration error:", error.message);

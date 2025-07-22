@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/Favorites.css';
+import useGlobalReducer from '../hooks/useGlobalReducer';
 
 // API base URL
 const API_BASE_URL = `${import.meta.env.VITE_BACKEND_URL}`;
@@ -26,22 +27,22 @@ function PetCard({ pet, onRemoveFavorite, favoriteId }) {
                 className="card-img-top favorites-img"
                 alt={pet.name}
             />
-           
+
             <span className="favorites-heart" title="Favorite">
                 ♥
             </span>
             <div className="card-body">
-               
+
                 <h5 className="favorites-card-title card-title mb-1">{pet.name}</h5>
-               
+
                 <div className="text-muted" style={{ fontSize: '0.95rem' }}>{pet.age}</div>
-                
+
                 <div className="favorites-location mb-2">
                     <span className="me-1" role="img" aria-label="Location">📍</span>
                     {pet.location}
                 </div>
 
-                
+
                 <div className="mb-3">
                     {pet.breed && (
                         <div className="mb-1">
@@ -65,11 +66,11 @@ function PetCard({ pet, onRemoveFavorite, favoriteId }) {
                     )}
                 </div>
 
-               
+
                 <button className="btn favorites-btn w-100 mb-2">
                     Apply to Adopt
                 </button>
-                
+
                 <button
                     className="btn btn-outline-danger w-100"
                     onClick={handleRemoveFavorite}
@@ -86,15 +87,15 @@ function Favorites() {
     const [favorites, setFavorites] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-
+    const { store, dispatch } = useGlobalReducer();
     // Fetch favorites 
     const fetchFavorites = async () => {
         try {
             setLoading(true);
             setError(null);
 
-           
-            const response = await fetch(`${API_BASE_URL}/favorites?user_id=1`);
+
+            const response = await fetch(`${API_BASE_URL}api/favorite`);
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -118,7 +119,7 @@ function Favorites() {
     // Remove a pet from favorites
     const removeFavorite = async (favoriteId) => {
         try {
-            const response = await fetch(`${API_BASE_URL}/favorites/${favoriteId}`, {
+            const response = await fetch(`${API_BASE_URL}api/favorites/${favoriteId}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
@@ -149,11 +150,11 @@ function Favorites() {
     // Add a pet to favorites (for future use)
     const addFavorite = async (userId, petId) => {
         try {
-            const response = await fetch(`${API_BASE_URL}/favorites`, {
+            const response = await fetch(`${API_BASE_URL}api/favorites`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                //    'Authorization': `Bearer ${store.token}`
+                    'Authorization': `Bearer ${store.token}`
                 },
                 body: JSON.stringify({
                     user_id: userId,
