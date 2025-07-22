@@ -4,15 +4,19 @@ import rigoImageUrl from "../assets/img/rigo-baby.jpg";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { useNavigate } from "react-router-dom";
 
+
 const Home = () => {
   const [zipCode, setZipCode] = useState("");
   const navigate = useNavigate();
-
+  const { store, dispatch } = useGlobalReducer();
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!zipCode.trim()) return alert("Please enter your Zip Code");
     navigate("/question1", { state: { zipCode } });
   };
+  useEffect(() => {
+    if (!!store.token) return navigate("/find-your-pup");
+  }, [store.token]);
 
   return (
     <section
@@ -125,7 +129,7 @@ const Home = () => {
             objectFit: "cover",
             borderRadius: "20px",
             position: "absolute",
-            bottom: "10px",
+            bottom: "20px",
             right: "50px",
             zIndex: 1,
           }}

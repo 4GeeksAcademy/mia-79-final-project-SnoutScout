@@ -11,6 +11,7 @@ from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
 
 
 app = Flask(__name__)
@@ -40,6 +41,9 @@ if db_url is not None:
         "postgres://", "postgresql://")
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:////tmp/test.db"
+app.config["JWT_SECRET_KEY"] = os.environ.get("FLASK_APP_KEY")
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 24 * 60 * 60
+jwt = JWTManager(app)
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 MIGRATE = Migrate(app, db, compare_type=True)

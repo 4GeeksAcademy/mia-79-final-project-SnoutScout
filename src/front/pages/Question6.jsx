@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import useGlobalReducer from "../hooks/useGlobalReducer";
 
 const Question6 = () => {
   const [selected, setSelected] = useState("");
   const navigate = useNavigate();
+  const { store, dispatch } = useGlobalReducer();
 
   const options = ["Male", "Female", "Doesn't matter"];
 
@@ -28,7 +30,16 @@ const Question6 = () => {
 
       <button
         style={styles.nextButton}
-        onClick={() => navigate("/question7")}
+        onClick={() => {
+          dispatch({
+            type: "update_answer",
+            payload: {
+              step: "gender_preference",
+              answer: selected
+            }
+          });
+          navigate("/question7");
+        }}
         disabled={!selected}
       >
         Next
@@ -86,9 +97,9 @@ const styles = {
     cursor: "pointer",
   },
   stepText: {
-  marginTop: "10px",
-  fontSize: "14px",
-  color: "#666",
-},
+    marginTop: "10px",
+    fontSize: "14px",
+    color: "#666",
+  },
 };
 export default Question6;

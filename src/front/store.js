@@ -1,45 +1,99 @@
-export const initialStore=()=>{
-  return{
+export const initialStore = () => {
+  // check if there is a token and a user in localStorage
+  let user = localStorage.getItem("user");
+  if (user !== null) user = JSON.parse(user);
+  let token = localStorage.getItem("token");
+  if (token === null) token = undefined;
+  return {
+    BASE_API_URL: import.meta.env.VITE_BACKEND_URL,
+    currentUser: 0, // represents the logged-in user ID
+    contacts: [],
+    messages: {},
+    activeContact: null,
     pets: [],
-    message: null,
-    todos: [
-      {
-        id: 1,
-        title: "Make the bed",
-        background: null,
-      },
-      {
-        id: 2,
-        title: "Do my homework",
-        background: null,
-      }
-    ]
-  }
-}
+    user: user,
+    token: token,
+    questionnaireAnswers: {},
+  };
+};
 
 export default function storeReducer(store, action = {}) {
-  switch(action.type){
-    case 'set_hello':
+  switch (action.type) {
+    case "set_current_user":
       return {
         ...store,
-        message: action.payload
+        currentUser: action.payload,
       };
-      
-    case 'add_task':
-
-      const { id,  color } = action.payload
-
+    case "set_contacts":
       return {
         ...store,
-        todos: store.todos.map((todo) => (todo.id === id ? { ...todo, background: color } : todo))
+        contacts: action.payload,
       };
-    case 'set_pets':
+    case "set_messages":
       return {
         ...store,
-        pets: action.payload
-      }
+        messages: {
+          ...store.messages,
+          [action.payload.contactId]: action.payload.messages,
+        },
+      };
+    case "add_message":
+      const { contactId, message } = action.payload;
+      return {
+        ...store,
+        messages: {
+          ...store.messages,
+          [contactId]: [...action(store.messages[contactId] || []), message],
+        },
+      };
+    case "set_active_contact":
+      return {
+        ...store,
+        activeContact: action.payload,
+      };
+
+    case "set_pets":
+      return {
+        ...store,
+        pets: action.payload,
+      };
+
+    // #store user object
+    case "set_user":
+      localStorage.setItem("user", JSON.stringify(action.payload.user));
+      localStorage.setItem("token", action.payload.token);
+      return {
+        ...store,
+        user: action.payload.user,
+        token: action.payload.token,
+      };
+
+    // save an answer to a specific question
+    case "update_answer":
+      return {
+        ...store,
+        questionnaireAnswers: {
+          ...store.questionnaireAnswers,
+          [action.payload.step]: action.payload.answer,
+        },
+      };
+
+    // reseta all answers
+    case "clear_answers":
+      return {
+        ...store,
+        questionnaireAnswers: {},
+      };
+    case "logout":
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      return {
+        ...store,
+        user: null,
+        token: undefined,
+      };
 
     default:
-      throw Error('Unknown action.');
-  }    
+      return store;
+  }
 }

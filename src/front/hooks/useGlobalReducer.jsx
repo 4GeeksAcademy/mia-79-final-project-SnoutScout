@@ -12,13 +12,46 @@ export function StoreProvider({ children }) {
     // Initialize reducer with the initial state.
     const [store, dispatch] = useReducer(storeReducer, initialStore())
     // Provide the store and dispatch method to all child components.
-    return <StoreContext.Provider value={{ store, dispatch }}>
+    return (
+    <StoreContext.Provider value={{ store, dispatch }}>
         {children}
     </StoreContext.Provider>
+    )
 }
+
 
 // Custom hook to access the global state and dispatch function.
 export default function useGlobalReducer() {
     const { dispatch, store } = useContext(StoreContext)
     return { dispatch, store };
 }
+
+
+const MyComponent = () => {
+const { store, dispatch } = useGlobalReducer();
+// set user after login
+
+dispatch({
+    type: "set_user",
+    payload: {
+        id: 1,
+        name: "Andres",
+        email: "andres@example.com",
+    }
+});
+
+// save an answer to a specific question
+dispatch({
+    type: "update_answer",
+    payload: {
+        step: 1, value: "answer1"}
+});
+
+// clear all answers
+dispatch({
+    type: "clear_answers"
+}, []);
+
+return <div>Welcome {store.user?.name}!</div>
+};
+

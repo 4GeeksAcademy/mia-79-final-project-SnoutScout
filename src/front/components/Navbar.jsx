@@ -2,37 +2,37 @@ import React from 'react';
 import { Navbar as BSNavbar, Nav, Container, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
-export function Navbar() {
-  return (
-    <BSNavbar expand="lg" className="navbar-custom">
-      <Container>
-        <BSNavbar.Brand as={Link} to="/" className="text-white">
-          SnoutScout
-        </BSNavbar.Brand>
-        <BSNavbar.Toggle aria-controls="main-nav" className="navbar-dark" />
-        <BSNavbar.Collapse id="main-nav">
-          <Nav className="me-auto">
-            <Nav.Link as={Link} to="/" className="text-white">
-              Home
-            </Nav.Link>
-            <Nav.Link as={Link} to="/messages" className="text-white">
-              Messages
-            </Nav.Link>
-            <Nav.Link as={Link} to="/browse" className="text-white">
-              Browse
-            </Nav.Link>
-            <Nav.Link as={Link} to="/favorites" className="text-white">
-              Favorites
-            </Nav.Link>
-            <Nav.Link as={Link} to="/socialfeed" className="text-white">
-              Social Feed
-            </Nav.Link>
-          </Nav>
-          <Button as={Link} to="/signup" variant="outline-light" size="sm">
-            Sign Up
-          </Button>
-        </BSNavbar.Collapse>
-      </Container>
-    </BSNavbar>
-  );
-}
+
+export const Navbar = () => {
+
+	return (
+		<nav className="navbar navbar-expand navbar-light py-2" style={{ backgroundColor: "#fd7e14" }}>
+			<div className="container-fluid">
+				<h1 className="navbar-brand fs-1 fw-bold">SnoutScout</h1>
+				<div className="d-flex flex-grow-1 justify-content-center">
+					<div className="d-none d-md-flex gap-4">
+
+						<Link to="/" className="nav-link text-white">Home</Link>
+						<Link to="/messages" className="nav-link text-white">Messages</Link>
+						<Link to="/snoutscouter" className="nav-link text-white">SnoutScouter</Link>
+						<Link to="/favorites" className="nav-link text-white">Favorites</Link>
+					</div>
+				</div>
+
+				<div className="d-flex w-100 justify-content-end">
+					<div className="col-auto">
+						<Link to="/login">
+							<button className="btn btn-light" style={{ color: "#fd7e14" }}>
+								Login
+							</button>
+						</Link>
+
+					</div>
+
+				</div>
+			</div>
+		</nav>
+	);
+};
+
+export default Navbar;

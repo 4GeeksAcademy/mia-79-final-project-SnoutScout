@@ -34,11 +34,12 @@ export default function DogCarousel() {
   const [current, setCurrent] = useState(0);
   const { store, dispatch } = useGlobalReducer();
   const PetAuth = async () => {
-    const url = `${import.meta.env.VITE_BACKEND_URL}/api/pets`;
+    const url = `${import.meta.env.VITE_BACKEND_URL}api/pets`;
     const result = await fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${store.token}`
       },
     })
     let body = await result.json();
@@ -64,10 +65,16 @@ export default function DogCarousel() {
         ‹
       </Button>
       {!!store.pets && store.pets.length > 1 && (
-        <DogCard dog={store.pets[current]} />
+        <DogCard dog={store.pets[current]}
+          onFavorite={next}  // advance after a favorite
+          onSkip={next}
+        />
       )}
 
-      <Button variant="outline-secondary" onClick={next} aria-label="Next" className="ms-3">
+      <Button variant="outline-secondary"
+        onClick={next}
+        aria-label="Next"
+        className="ms-3">
         ›
       </Button>
     </Container>

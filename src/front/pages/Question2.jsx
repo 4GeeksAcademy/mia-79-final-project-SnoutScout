@@ -1,13 +1,15 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import useGlobalReducer from "../hooks/useGlobalReducer";
 
 const Question2 = () => {
   const [selected, setSelected] = useState("");
   const navigate = useNavigate();
-    
-    const options = ["Not very active", "Moderately active", "Very active"];
-    
-   return (
+  const { store, dispatch } = useGlobalReducer();
+
+  const options = ["Not very active", "Moderately active", "Very active"];
+
+  return (
     <div style={styles.page}>
       <h2 style={styles.title}>What is your activity level?</h2>
 
@@ -28,7 +30,16 @@ const Question2 = () => {
 
       <button
         style={styles.nextButton}
-        onClick={() => navigate("/question3")}
+        onClick={() => {
+          dispatch({
+            type: "update_answer",
+            payload: {
+              step: "activity",
+              answer: selected
+            }
+          });
+          navigate("/question3");
+        }}
         disabled={!selected}
       >
         Next
@@ -86,10 +97,10 @@ const styles = {
     cursor: "pointer",
   },
   stepText: {
-  marginTop: "10px",
-  fontSize: "14px",
-  color: "#666",
-}
+    marginTop: "10px",
+    fontSize: "14px",
+    color: "#666",
+  }
 };
 
 export default Question2;
