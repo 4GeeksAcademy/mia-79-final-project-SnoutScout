@@ -10,7 +10,7 @@ const Question8 = () => {
 
   return (
     <div style={styles.page}>
-      <h2 style={styles.title}>Have you owened a dog before?</h2>
+      <h2 style={styles.title}>Have you owned a dog before?</h2>
 
       <div style={styles.options}>
         {options.map((option) => (
