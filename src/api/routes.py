@@ -170,6 +170,7 @@ def get_pets():
         )
     )
     body = login_response.json()
+    print("something", body)
     bearer_token = f"Bearer {body['access_token']}"
     animals_response = requests.get(
         url="https://api.petfinder.com/v2/animals?type=Dog",
