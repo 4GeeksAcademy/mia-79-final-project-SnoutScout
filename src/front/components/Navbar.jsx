@@ -13,9 +13,10 @@ export const Navbar = () => {
 					<div className="d-none d-md-flex gap-4">
 
 						<Link to="/" className="nav-link text-white">Home</Link>
+						<Link to="/favorites" className="nav-link text-white">Favorites</Link>
+						<Link to="/profile" className="nav-link text-white">Profile</Link>
 						<Link to="/messages" className="nav-link text-white">Messages</Link>
 						<Link to="/snoutscouter" className="nav-link text-white">SnoutScouter</Link>
-						<Link to="/favorites" className="nav-link text-white">Favorites</Link>
 					</div>
 				</div>
 

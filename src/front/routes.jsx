@@ -14,10 +14,10 @@ import Question5 from "./pages/Question5";
 import Question6 from "./pages/Question6";
 import Question7 from "./pages/Question7";
 import Question8 from "./pages/Question8";
-
 import Registerform from "./pages/RegisterForm";
 import ShelterLookup from "./pages/ShelterLookup";
 import Login from "./pages/Login";
+import { Profile } from "./pages/Profile";
 
 // import { Single } from "./pages/Single";
 // import { Demo } from "./pages/Demo";
@@ -53,6 +53,7 @@ export const router = createBrowserRouter(
       <Route path="/login" element={<Login />} />
       <Route path="/favorites" element={<Favorites />} />
       <Route path="/pets" element={<Pets />} />
+      <Route path="/profile" element={<Profile />} />
 
 
 
