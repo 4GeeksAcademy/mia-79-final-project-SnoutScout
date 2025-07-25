@@ -13,7 +13,7 @@ export const initialStore = () => {
     pets: [],
     user: user,
     token: token,
-    questioinnaireAnswers: {},
+    questionnaireAnswers: {},
   };
 };
 
@@ -72,9 +72,9 @@ export default function storeReducer(store, action = {}) {
     case "update_answer":
       return {
         ...store,
-        questioinnaireAnswers: {
-          ...store.questioinnaireAnswers,
-          [`question${action.payload.step}`]: action.payload.answer,
+        questionnaireAnswers: {
+          ...store.questionnaireAnswers,
+          [action.payload.step]: action.payload.answer,
         },
       };
 
@@ -82,7 +82,7 @@ export default function storeReducer(store, action = {}) {
     case "clear_answers":
       return {
         ...store,
-        questioinnaireAnswers: {},
+        questionnaireAnswers: {},
       };
     case "logout":
       localStorage.removeItem("token");

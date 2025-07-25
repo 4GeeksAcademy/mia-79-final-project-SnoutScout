@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy import String, Boolean  
+from sqlalchemy import String, Boolean
 from sqlalchemy.orm import Mapped, mapped_column
 from datetime import datetime
 
@@ -28,8 +28,8 @@ class User(db.Model):
 
     def check_password(self, password_input):
         return check_password_hash(self.password, password_input)
-    
-    def to_dict (self):
+
+    def to_dict(self):
         return {
             "id": self.id,
             "first_name": self.first_name,
@@ -38,13 +38,14 @@ class User(db.Model):
             "created_at": self.created_at.isoformat()
         }
 
+
 class Favorite(db.Model):
     __tablename__ = 'favorites'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     pet_id = db.Column(db.Integer, db.ForeignKey('pets.id'), nullable=False)
 
-    # Relationship to access 
+    # Relationship to access
     user = db.relationship('User', back_populates='favorites')
     pet = db.relationship('Pet', back_populates='favorites')
 
@@ -63,12 +64,14 @@ class Favorite(db.Model):
 
 class Message(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
-    message_from: Mapped[int] = mapped_column(db.ForeignKey('user.id'), nullable=False)
-    message_to: Mapped[int] = mapped_column(db.ForeignKey('user.id'), nullable=False)
+    message_from: Mapped[int] = mapped_column(
+        db.ForeignKey('user.id'), nullable=False)
+    message_to: Mapped[int] = mapped_column(
+        db.ForeignKey('user.id'), nullable=False)
     content: Mapped[str] = mapped_column(nullable=False)
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now)
 
-    def serialize(self):
+    def to_dict(self):
         return {
             "id": self.id,
             "message_from": self.message_from,
@@ -91,8 +94,7 @@ class Questionnaire(db.Model):
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-
-    def seralize (self):
+    def to_dict(self):
         return {
             "id": self.id,
             "size": self.size,
@@ -105,13 +107,13 @@ class Questionnaire(db.Model):
             "owned_pets_before": self.owned_pets_before,
             "user_id": self.user_id
         }
-    
-              
+
 
 # Pet model
 class Pet(db.Model):
     __tablename__ = 'pets'
     id = db.Column(db.Integer, primary_key=True)
+    petfinder_id = db.Column(db.Integer, nullable=False)
     name = db.Column(db.String(100), nullable=False)
     age = db.Column(db.String(50))
     location = db.Column(db.String(256))

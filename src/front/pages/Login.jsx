@@ -76,7 +76,7 @@ const Login = () => {
         </form>
         <p className="mt-3">
           Don't have an account?{" "}
-          <Link to="/register" style={{ color: "green" }}>
+          <Link to="/" style={{ color: "green" }}>
             Sign up
           </Link>
         </p>

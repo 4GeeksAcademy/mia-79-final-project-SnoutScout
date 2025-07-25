@@ -38,13 +38,18 @@ const RegisterForm = () => {
       if (!response.ok) {
         throw new Error(data.error || "Registration failed");
       }
-
-      if (data.token) {
-        sessionStorage.setItem("token", data.token);
-        dispatchEvent({ type: "setToken", payload: data.token });
+      const payload = store.questionnaireAnswers;
+      const questionnaireResponse = await fetch(
+        `${store.BASE_API_URL}api/questionnaire`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${data.token}`
+        }
       }
-
-      navigate("/question1"); // Redirect to the first question page
+      );
+      navigate("/login");
     } catch (error) {
       console.error("Registration error:", error.message);
     }

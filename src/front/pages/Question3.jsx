@@ -1,13 +1,15 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import useGlobalReducer from "../hooks/useGlobalReducer";
 
 const Question3 = () => {
   const [selected, setSelected] = useState("");
   const navigate = useNavigate();
+  const { store, dispatch } = useGlobalReducer();
 
   const options = ["25 miles", "50 miles", "100 miles"];
 
- return (
+  return (
     <div style={styles.page}>
       <h2 style={styles.title}>How far are you willing to travel?</h2>
 
@@ -28,7 +30,16 @@ const Question3 = () => {
 
       <button
         style={styles.nextButton}
-        onClick={() => navigate("/question4")}
+        onClick={() => {
+          dispatch({
+            type: "update_answer",
+            payload: {
+              step: "travel",
+              answer: selected
+            }
+          });
+          navigate("/question4");
+        }}
         disabled={!selected}
       >
         Next
@@ -86,10 +97,10 @@ const styles = {
     cursor: "pointer",
   },
   stepText: {
-  marginTop: "10px",
-  fontSize: "14px",
-  color: "#666",
-}
+    marginTop: "10px",
+    fontSize: "14px",
+    color: "#666",
+  }
 };
 
 export default Question3;

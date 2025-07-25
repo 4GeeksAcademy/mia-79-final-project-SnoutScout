@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import useGlobalReducer from "../hooks/useGlobalReducer";
 
 
 const Question8 = () => {
   const [selected, setSelected] = useState("");
   const navigate = useNavigate();
+  const { store, dispatch } = useGlobalReducer();
 
   const options = ["Yes", "No"];
 
@@ -28,11 +30,21 @@ const Question8 = () => {
       </div>
 
       <div style={{ marginTop: "20px" }}>
-        <Link to="/register">
-          <button style={styles.button} disabled={!selected}>
-            Join Now
-          </button>
-        </Link>
+        <button
+          style={styles.button}
+          disabled={!selected}
+          onClick={() => {
+            dispatch({
+              type: "update_answer",
+              payload: {
+                step: "owned_pets_before",
+                answer: selected
+              }
+            });
+            navigate("/register");
+          }}>
+          Join Now
+        </button>
       </div>
       <p style={styles.stepText}>Step 8 of 8</p>
     </div>
