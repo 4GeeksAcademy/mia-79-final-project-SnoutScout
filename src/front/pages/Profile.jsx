@@ -17,9 +17,11 @@ export const Profile = () => {
     // Visitor view => takes you to message page, saves user in your list of contacts, starts a convo 
     // "envelop" icon no matter the view 
 
-    // edit profile button visible only when you're viewing you're own page, 
-    // form will pop up as modal to edit 
-    // Edit Contact component 
+    // edit profile => profile pic, bio 
+    // form pops up as modal 
+    const EditProfile() = {
+        
+    }
 
     // user should be able to insert a picture into each of the 4 pictures slots to show off their dogs 
 
@@ -86,6 +88,7 @@ export const Profile = () => {
                             width: "250px",
                             height: "250px",
                             border: "2px solid #FFD6A5",
+                            background: "#FFD8A8"
                         }} >
                         <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png" className="p-2 h-100 w-100" alt="Pictures"></img>
                     </div>
@@ -93,7 +96,8 @@ export const Profile = () => {
                         style={{ 
                             width: "250px", 
                             height: "250px", 
-                            border: "2px solid #FFD6A5" 
+                            border: "2px solid #FFD6A5", 
+                            background: "#FFD8A8"
                             }}>
                         <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png" className="p-2 h-100 w-100" alt="Pictures"></img>
                     </div>
@@ -101,7 +105,8 @@ export const Profile = () => {
                         style={{ 
                             width: "250px", 
                             height: "250px", 
-                            border: "2px solid #FFD6A5" 
+                            border: "2px solid #FFD6A5",
+                            background: "#FFD8A8"
                             }}>
                         <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png" className="p-2 h-100 w-100" alt="Pictures"></img>
                     </div>
@@ -109,7 +114,8 @@ export const Profile = () => {
                         style={{ 
                             width: "250px", 
                             height: "250px", 
-                            border: "2px solid #FFD6A5"
+                            border: "2px solid #FFD6A5",
+                            background: "#FFD8A8"
                             }}>
                         <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png" className="p-2 h-100 w-100" alt="Pictures"></img>
                     </div>

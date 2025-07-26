@@ -13,6 +13,8 @@ class User(db.Model):
     last_name = db.Column(String(80), nullable=False)
     email = db.Column(String(120), unique=True, nullable=False)
     password = db.Column(String(200), nullable=False)
+    bio = db.Column(String(250))
+    profile_pic_url = db.Column(String(1000))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     questionnaire = db.relationship(
@@ -20,11 +22,13 @@ class User(db.Model):
     favorites = db.relationship(
         'Favorite', back_populates='user', cascade='all, delete-orphan')
 
-    def __init__(self, first_name, last_name, email, password):
+    def __init__(self, first_name, last_name, email, password, bio, profile_pic_url):
         self.first_name = first_name
         self.last_name = last_name
         self.email = email
         self.password = generate_password_hash(password)
+        self.bio = bio
+        self.profile_pic_url = profile_pic_url
 
     def check_password(self, password_input):
         return check_password_hash(self.password, password_input)
@@ -35,9 +39,26 @@ class User(db.Model):
             "first_name": self.first_name,
             "last_name": self.last_name,
             "email": self.email,
-            "created_at": self.created_at.isoformat()
+            "created_at": self.created_at.isoformat(),
+            "bio": self.bio,
+            "profile_pic_url": self.profile_pic_url
         }
 
+class DogPicture(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    image_url = db.Column(String(500), nullable=False)
+    position = db.Column(db.Integer)  # To track which slot (1-4) the picture is in
+    
+    user = db.relationship('User', backref='dog_pictures')
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "image_url": self.image_url,
+            "position": self.position
+        }
 
 class Favorite(db.Model):
     __tablename__ = 'favorites'
