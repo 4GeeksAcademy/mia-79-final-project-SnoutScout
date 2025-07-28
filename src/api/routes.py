@@ -1,8 +1,8 @@
-from flask import Flask, request, jsonify, url_for, Blueprint
+from flask import Flask, request, jsonify, url_for
 from api.models import db, User, Message, Pet  # Added Message import
 from api.utils import generate_sitemap, APIException
 from datetime import datetime
-from flask import Blueprint, request, jsonify
+from flask import Blueprint
 from .models import db, Favorite, Pet, User, Questionnaire
 import os
 import requests
@@ -11,6 +11,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_tok
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
+favorites_bp = Blueprint('favorites', __name__)
 api = Blueprint('api', __name__)
 # Allow CORS requests to this API
 CORS(api)
@@ -45,25 +46,20 @@ def score_pet_against_questionnaire(pet, questionnaire):
 
     if questionnaire.size and questionnaire.size.lower() in (pet["size"] or "").lower():
         score += 1
-    if questionnaire.activity and questionnaire.activity.lower() in (pet["activity"] or "").lower():
+    if questionnaire.age and questionnaire.activity.lower() in (pet["age"] or "").lower():
         score += 1
-    if questionnaire.location and questionnaire.location.lower() in (pet["location"] or "").lower():
+    if questionnaire.gender and questionnaire.location.lower() in (pet["gender"] or "").lower():
         score += 1
-    if questionnaire.other_pets and questionnaire.other_pets.lower() in (pet["other_pets"] or "").lower():
+    if questionnaire.good_with and questionnaire.other_pets.lower() in (pet["good_with"] or "").lower():
         score += 1
-    if questionnaire.hypoallergenic and questionnaire.hypoallergenic.lower() in (pet["hypoallergenic"] or "").lower():
+    if questionnaire.care_and_behavior and questionnaire.hypoallergenic.lower() in (pet["care_and_behavior"] or "").lower():
         score += 1
-    if questionnaire.gender and questionnaire.gender.lower() in (pet["gender"] or "").lower():
-        score += 1
-    if questionnaire.yard and questionnaire.yard.lower() in (pet["yard"] or "").lower():
-        score += 1
-    if questionnaire.owned_pets_before and questionnaire.owned_pets_before.lower() in (pet["owned_pets_before"] or "").lower():
+    if questionnaire.coat_length and questionnaire.gender.lower() in (pet["coat_length"] or "").lower():
         score += 1
 
     return score
 
 # ===== PET MATCHING ROUTES =====
-
 
 @api.route('/match/<int:user_id>', methods=['GET'])
 @jwt_required()
@@ -447,3 +443,6 @@ def create_user_questionnaire():
     db.session.add(questionnaire)
     db.session.commit()
     return jsonify(questionnaire.to_dict()), 201
+
+
+__all__ = ['favorites_bp']

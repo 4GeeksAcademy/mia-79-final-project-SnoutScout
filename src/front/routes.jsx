@@ -12,12 +12,13 @@ import Question3 from "./pages/Question3";
 import Question4 from "./pages/Question4";
 import Question5 from "./pages/Question5";
 import Question6 from "./pages/Question6";
-import Question7 from "./pages/Question7";
-import Question8 from "./pages/Question8";
+// import Question7 from "./pages/Question7";
+// import Question8 from "./pages/Question8";
 
 import Registerform from "./pages/RegisterForm";
 import ShelterLookup from "./pages/ShelterLookup";
 import Login from "./pages/Login";
+import Matches from "./pages/Matches";
 
 // import { Single } from "./pages/Single";
 // import { Demo } from "./pages/Demo";
@@ -37,7 +38,8 @@ export const router = createBrowserRouter(
     <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>} >
 
       {/* Nested Routes: Defines sub-routes within the BaseHome component. */}
-      <Route index element={<Home />} />
+      {/* <Route index element={<Home />} /> */}
+      <Route path="/home" element={<Home />} />
       <Route path="/messages" element={<Messages />} />
       <Route path="/question1" element={<Question1 />} />
       <Route path="/question2" element={<Question2 />} />
@@ -45,14 +47,15 @@ export const router = createBrowserRouter(
       <Route path="/question4" element={<Question4 />} />
       <Route path="/question5" element={<Question5 />} />
       <Route path="/question6" element={<Question6 />} />
-      <Route path="/question7" element={<Question7 />} />
-      <Route path="/question8" element={<Question8 />} />
+      {/* <Route path="/question7" element={<Question7 />} /> */}
+      {/* <Route path="/question8" element={<Question8 />} /> */}
       <Route path="/register" element={<Registerform />} />
       <Route path="/find-your-pup" element={<FindYourPup />} />
       <Route path="/Shelters" element={<ShelterLookup />} />
       <Route path="/login" element={<Login />} />
       <Route path="/favorites" element={<Favorites />} />
       <Route path="/pets" element={<Pets />} />
+      <Route path="/matches" element={<Matches />} />
 
 
 

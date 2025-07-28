@@ -11,7 +11,7 @@ const Question1 = () => {
 
   return (
     <div style={styles.page}>
-      <h2 style={styles.title}>What size dog do you want?</h2>
+      <h2 style={styles.title}>Dog Size?</h2>
 
       <div style={styles.options}>
         {options.map((option) => (
@@ -45,7 +45,7 @@ const Question1 = () => {
       >
         Next
       </button>
-      <p style={styles.stepText}>Step 1 of 8</p>
+      <p style={styles.stepText}>Step 1 of 6</p>
     </div>
   );
 };

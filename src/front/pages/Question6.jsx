@@ -2,16 +2,17 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 
+
 const Question6 = () => {
   const [selected, setSelected] = useState("");
   const navigate = useNavigate();
   const { store, dispatch } = useGlobalReducer();
 
-  const options = ["Male", "Female", "Doesn't matter"];
+  const options = ["Short", "Medium", "Long", "Wire"];
 
   return (
     <div style={styles.page}>
-      <h2 style={styles.title}>Do you prefer male or female?</h2>
+      <h2 style={styles.title}>Coat Length?</h2>
 
       <div style={styles.options}>
         {options.map((option) => (
@@ -28,23 +29,24 @@ const Question6 = () => {
         ))}
       </div>
 
-      <button
-        style={styles.nextButton}
-        onClick={() => {
-          dispatch({
-            type: "update_answer",
-            payload: {
-              step: "gender_preference",
-              answer: selected
-            }
-          });
-          navigate("/question7");
-        }}
-        disabled={!selected}
-      >
-        Next
-      </button>
-      <p style={styles.stepText}>Step 6 of 8</p>
+      <div style={{ marginTop: "20px" }}>
+        <button
+          style={styles.button}
+          disabled={!selected}
+          onClick={() => {
+            dispatch({
+              type: "update_answer",
+              payload: {
+                step: "owned_pets_before",
+                answer: selected
+              }
+            });
+            navigate("/register");
+          }}>
+          Join Now
+        </button>
+      </div>
+      <p style={styles.stepText}>Step 6 of 6</p>
     </div>
   );
 };
@@ -86,7 +88,7 @@ const styles = {
     borderColor: "#000",
     backgroundColor: "#d9f2e6",
   },
-  nextButton: {
+  button: {
     marginTop: 30,
     padding: "12px 30px",
     backgroundColor: "#004d40",
