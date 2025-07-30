@@ -90,7 +90,7 @@ class Message(db.Model):
     message_to: Mapped[int] = mapped_column(
         db.ForeignKey('user.id'), nullable=False)
     content: Mapped[str] = mapped_column(nullable=False)
-    created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now)
+    created_at: Mapped[datetime] = mapped_column(default=datetime.now)
 
     def to_dict(self):
         return {

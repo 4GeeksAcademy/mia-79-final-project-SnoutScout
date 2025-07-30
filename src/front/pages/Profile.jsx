@@ -19,8 +19,18 @@ export const Profile = () => {
 
     // edit profile => profile pic, bio 
     // form pops up as modal 
-    const EditProfile() = {
-        
+
+    // ===== EDIT PROFILE MODAL LOGIC =====
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editForm, setEditForm] = useState({
+        profile_pic_url: '',
+        bio: '',
+        dog_pics: Array(4).fill('')
+    });
+
+        // Fetch current data when modal opens
+    const editProfile = () => {
+        // Is the modal open?
     }
 
     // user should be able to insert a picture into each of the 4 pictures slots to show off their dogs 
@@ -75,7 +85,7 @@ export const Profile = () => {
                             {/* viewing your own page => your messages page 
                                 viewing someone else's page => create new contact, open fresh new conversation that */}
                             <button type="button" class="btn btn-info">Message Me</button>
-                            <button type="button" class="btn btn-info">Edit Profile</button>
+                            <button onclick="myFunction()">Edit Profile</button>
                         </div>
                     </div>
                 </div>
@@ -92,31 +102,31 @@ export const Profile = () => {
                         }} >
                         <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png" className="p-2 h-100 w-100" alt="Pictures"></img>
                     </div>
-                    <div className="grid-item-pic" 
-                        style={{ 
-                            width: "250px", 
-                            height: "250px", 
-                            border: "2px solid #FFD6A5", 
-                            background: "#FFD8A8"
-                            }}>
-                        <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png" className="p-2 h-100 w-100" alt="Pictures"></img>
-                    </div>
-                    <div className="grid-item-pic" 
-                        style={{ 
-                            width: "250px", 
-                            height: "250px", 
+                    <div className="grid-item-pic"
+                        style={{
+                            width: "250px",
+                            height: "250px",
                             border: "2px solid #FFD6A5",
                             background: "#FFD8A8"
-                            }}>
+                        }}>
                         <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png" className="p-2 h-100 w-100" alt="Pictures"></img>
                     </div>
-                    <div className="grid-item-pic" 
-                        style={{ 
-                            width: "250px", 
-                            height: "250px", 
+                    <div className="grid-item-pic"
+                        style={{
+                            width: "250px",
+                            height: "250px",
                             border: "2px solid #FFD6A5",
                             background: "#FFD8A8"
-                            }}>
+                        }}>
+                        <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png" className="p-2 h-100 w-100" alt="Pictures"></img>
+                    </div>
+                    <div className="grid-item-pic"
+                        style={{
+                            width: "250px",
+                            height: "250px",
+                            border: "2px solid #FFD6A5",
+                            background: "#FFD8A8"
+                        }}>
                         <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png" className="p-2 h-100 w-100" alt="Pictures"></img>
                     </div>
                 </div>
