@@ -1,42 +1,24 @@
+import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import useGlobalReducer from "../hooks/useGlobalReducer";
+
 export const Profile = () => {
-    // need to distinguish between self-view and visitor-view 
+    const { store, dispatch } = useGlobalReducer();
+    const [name, setName] = useState(`${store.user.first_name} ${store.user.last_name}`);
+    const [bio, setBio] = useState(`${store.user.bio || "This user has no bio."}`);
+    
+    // edit logic 
 
-    //===============
-    //  Self View
-    //===============
+    // check to make sure user is logged in
 
-    // Name/username should not be able to edit?
+    // PUT request
 
-    // Bio should be able to edit 
-
-    // "My Posts" button should work the same no matter what, for whoever's page it is
-    // you should be able to view the associated posts in a MODAL, column of posts like 
-    // name: (post/pic) ......... => click on it, it takes you to the post where you can like or comment 
-
-    // Self view => your messages page, no contact or convo selected, default view with your list of contacts on the left
-    // Visitor view => takes you to message page, saves user in your list of contacts, starts a convo 
-    // "envelop" icon no matter the view 
-
-    // edit profile => profile pic, bio 
-    // form pops up as modal 
-
-    // ===== EDIT PROFILE MODAL LOGIC =====
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [editForm, setEditForm] = useState({
-        profile_pic_url: '',
-        bio: '',
-        dog_pics: Array(4).fill('')
-    });
-
-        // Fetch current data when modal opens
-    const editProfile = () => {
-        // Is the modal open?
-    }
-
-    // user should be able to insert a picture into each of the 4 pictures slots to show off their dogs 
+    // GET request
 
 
-    return (
+
+
+        return (
         <div className="page-body d-flex justify-content-center"
             style={{
                 background: "linear-gradient(to right, #3f866c, #37bf5e)"
@@ -72,20 +54,40 @@ export const Profile = () => {
 
                         {/* Name */}
                         <div className="name pt-3">
-                            <h2>Name</h2>
+                            <h2>{store.user.first_name} {store.user.last_name}</h2>
                         </div>
 
                         {/* Bio, 250 max characters */}
                         <div className="bio">
-                            <h5>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor.</h5>
+                            <h5>{store.bio}</h5>
                         </div>
                         <div className="buttons d-flex gap-2">
                             {/* Changes what's below from pics/posts, both are squares */}
-                            <button type="button" class="btn btn-info">My Posts</button>
+                            <button type="button" className="btn btn-info">My Posts</button>
                             {/* viewing your own page => your messages page 
                                 viewing someone else's page => create new contact, open fresh new conversation that */}
-                            <button type="button" class="btn btn-info">Message Me</button>
-                            <button onclick="myFunction()">Edit Profile</button>
+                            <Link to="/messages" className="btn btn-success">My Messages</Link>
+                            {/* Edit Profile button, opens modal */}
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                                Launch static backdrop modal
+                            </button>
+                            <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h1 class="modal-title fs-5" id="staticBackdropLabel">Modal title</h1>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <input type="text" className="form-control mb-3" placeholder="Enter your name" value={name} onChange={(e) => setName(e.target.value)} />
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="button" class="btn btn-primary">Understood</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
