@@ -68,6 +68,8 @@ export default function storeReducer(store, action = {}) {
         token: action.payload.token,
       };
 
+      
+
     // save an answer to a specific question
     case "update_answer":
       return {

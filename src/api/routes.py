@@ -208,6 +208,23 @@ def get_pets():
 
     return jsonify(animals), 200
 
+@api.route('/profile', methods=['GET'])
+@jwt_required()
+def get_profile():
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    
+    # Fetch dog pictures for the user
+    # dog_pictures = DogPicture.query.filter_by(user_id=user_id).all()
+    
+    response = user.to_dict()
+    # response['dog_pictures'] = [pic.to_dict() for pic in dog_pictures]
+    
+    return jsonify({"user": user.to_dict()}), 200
+
 @api.route('/profile', methods=['PUT'])
 @jwt_required()
 def update_profile():
@@ -217,7 +234,7 @@ def update_profile():
     if not user:
         return jsonify({"error": "User not found"}, 404)
     
-    data = request.get_json
+    data = request.get_json()
 
     # Update bio if provided
     if 'bio' in data:
@@ -229,7 +246,7 @@ def update_profile():
     
     db.session.commit()
     
-    return jsonify(user.to_dict()), 200
+    return jsonify({"user": user.to_dict()}), 200
 
 @api.route('/dog-pictures', methods=['POST'])
 @jwt_required()
@@ -240,7 +257,7 @@ def add_dog_picture():
     required_fields = ['image_url', 'position']
     if not all(field in data for field in required_fields):
         return jsonify({"error": "Missing required fields"}), 400
-    
+       
     # Check if position is valid (1-4)
     if data['position'] not in [1, 2, 3, 4]:
         return jsonify({"error": "Position must be between 1 and 4"}), 400
