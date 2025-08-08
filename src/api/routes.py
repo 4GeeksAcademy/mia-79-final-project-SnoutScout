@@ -44,7 +44,7 @@ def score_pet_against_questionnaire(pet, questionnaire):
     score = 0
 
     if questionnaire.size and questionnaire.size.lower() in (pet["size"] or "").lower():
-        score + - 1
+        score += 1
     if questionnaire.activity and questionnaire.activity.lower() in (pet["activity"] or "").lower():
         score += 1
     if questionnaire.location and questionnaire.location.lower() in (pet["location"] or "").lower():
@@ -310,103 +310,103 @@ def create_pet():
     return jsonify({"success": True, "data": pet.to_dict()}), 201
 
 
-# @api.route('/pets/petfinder', methods=['GET'])
-# def get_pets_from_petfinder():
-#     """Get pets from Petfinder API"""
-#     try:
-#         # Get query parameters
-#         limit = request.args.get('limit', 20, type=int)
-#         location = request.args.get('location')
-#         animal_type = request.args.get('type')
-#         breed = request.args.get('breed')
-#         size = request.args.get('size')
-#         gender = request.args.get('gender')
-#         age = request.args.get('age')
+@api.route('/pets/petfinder', methods=['GET'])
+def get_pets_from_petfinder():
+    """Get pets from Petfinder API"""
+    try:
+        # Get query parameters
+        limit = request.args.get('limit', 20, type=int)
+        location = request.args.get('location')
+        animal_type = request.args.get('type')
+        breed = request.args.get('breed')
+        size = request.args.get('size')
+        gender = request.args.get('gender')
+        age = request.args.get('age')
 
-#         # Initialize Petfinder service
-#         petfinder = PetfinderService()
+        # Initialize Petfinder service
+        petfinder = PetfinderService()
 
-#         # Get animals from Petfinder
-#         response = petfinder.get_animals(
-#             limit=limit,
-#             location=location,
-#             animal_type=animal_type,
-#             breed=breed,
-#             size=size,
-#             gender=gender,
-#             age=age
-#         )
+        # Get animals from Petfinder
+        response = petfinder.get_animals(
+            limit=limit,
+            location=location,
+            animal_type=animal_type,
+            breed=breed,
+            size=size,
+            gender=gender,
+            age=age
+        )
 
-#         # Transform Petfinder animals to our format
-#         animals = response.get('animals', [])
-#         transformed_animals = []
+        # Transform Petfinder animals to our format
+        animals = response.get('animals', [])
+        transformed_animals = []
 
-#         for animal in animals:
-#             transformed_animal = petfinder.transform_petfinder_animal(animal)
-#             transformed_animals.append(transformed_animal)
+        for animal in animals:
+            transformed_animal = petfinder.transform_petfinder_animal(animal)
+            transformed_animals.append(transformed_animal)
 
-#         return jsonify({
-#             "success": True,
-#             "data": transformed_animals,
-#             "pagination": response.get('pagination', {}),
-#             "source": "petfinder"
-#         })
+        return jsonify({
+            "success": True,
+            "data": transformed_animals,
+            "pagination": response.get('pagination', {}),
+            "source": "petfinder"
+        })
 
-#     except Exception as e:
-#         return jsonify({"success": False, "error": str(e)}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
-# @api.route('/pets/sync-petfinder', methods=['POST'])
-# def sync_pets_from_petfinder():
-#     """Sync pets from Petfinder API to local database"""
-#     try:
-#         # Get query parameters
-#         limit = request.args.get('limit', 20, type=int)
-#         location = request.args.get('location')
-#         animal_type = request.args.get('type')
+@api.route('/pets/sync-petfinder', methods=['POST'])
+def sync_pets_from_petfinder():
+    """Sync pets from Petfinder API to local database"""
+    try:
+        # Get query parameters
+        limit = request.args.get('limit', 20, type=int)
+        location = request.args.get('location')
+        animal_type = request.args.get('type')
 
-#         # Initialize Petfinder service
-#         petfinder = PetfinderService()
+        # Initialize Petfinder service
+        petfinder = PetfinderService()
 
-#         # Get animals from Petfinder
-#         response = petfinder.get_animals(
-#             limit=limit,
-#             location=location,
-#             animal_type=animal_type
-#         )
+        # Get animals from Petfinder
+        response = petfinder.get_animals(
+            limit=limit,
+            location=location,
+            animal_type=animal_type
+        )
 
-#         animals = response.get('animals', [])
-#         synced_count = 0
+        animals = response.get('animals', [])
+        synced_count = 0
 
-#         for animal in animals:
-#             # Check if pet already exists by petfinder_id
-#             existing_pet = Pet.query.filter_by(
-#                 petfinder_id=str(animal.get('id'))).first()
+        for animal in animals:
+            # Check if pet already exists by petfinder_id
+            existing_pet = Pet.query.filter_by(
+                petfinder_id=str(animal.get('id'))).first()
 
-#             if not existing_pet:
-#                 # Transform and create new pet
-#                 pet_data = petfinder.transform_petfinder_animal(animal)
+            if not existing_pet:
+                # Transform and create new pet
+                pet_data = petfinder.transform_petfinder_animal(animal)
 
-#                 # Convert contact dict to JSON string
-#                 if pet_data.get('contact'):
-#                     pet_data['contact'] = json.dumps(pet_data['contact'])
+                # Convert contact dict to JSON string
+                if pet_data.get('contact'):
+                    pet_data['contact'] = json.dumps(pet_data['contact'])
 
-#                 pet = Pet(**pet_data)
-#                 db.session.add(pet)
-#                 synced_count += 1
+                pet = Pet(**pet_data)
+                db.session.add(pet)
+                synced_count += 1
 
-#         db.session.commit()
+        db.session.commit()
 
-#         return jsonify({
-#             "success": True,
-#             "message": f"Synced {synced_count} new pets from Petfinder",
-#             "total_animals": len(animals),
-#             "synced_count": synced_count
-#         })
+        return jsonify({
+            "success": True,
+            "message": f"Synced {synced_count} new pets from Petfinder",
+            "total_animals": len(animals),
+            "synced_count": synced_count
+        })
 
-#     except Exception as e:
-#         db.session.rollback()
-#         return jsonify({"success": False, "error": str(e)}), 500
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
 @api.route('/favorite', methods=['GET'])
