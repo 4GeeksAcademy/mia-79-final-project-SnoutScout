@@ -172,7 +172,7 @@ def get_pets():
     body = login_response.json()
     bearer_token = f"Bearer {body['access_token']}"
     animals_response = requests.get(
-        url="https://api.petfinder.com/v2/animals?type=Dog",
+        url="https://api.petfinder.com/v2/animals?type=Dog&limit=100",
         headers=dict({
             "Authorization": bearer_token,
             "Content-Type": "application/json"
@@ -369,7 +369,11 @@ def add_favorite():
             image_url=pet['photos'][0]['full'] if pet['photos'] else None,
             gender=pet['gender'],
             breed=pet['breeds']['primary'],
-            activity=str(pet['tags']))
+            activity=str(pet['tags']),
+            size=pet["size"],   
+            email=pet["contact"].get("email",""),
+            phone=pet["contact"].get("phone",""),      
+        )
         db.session.add(new_pet)
         db.session.commit()
         db.session.refresh(new_pet)
@@ -379,6 +383,107 @@ def add_favorite():
     db.session.commit()
     return jsonify({"success": True, "data": favorite.to_dict()}), 201
 
+# @api.route('/favorites', methods=['POST'])
+# @jwt_required()
+# def add_favorite():
+    try:
+        print("=== FAVORITE ROUTE DEBUG ===")
+        
+        # Get data
+        data = request.get_json()
+        print(f"Request data: {data}")
+        
+        pet = data.get('pet')
+        user_id = int(get_jwt_identity())
+        pet_id = data.get('pet_id')  # This is the Petfinder ID
+        
+        print(f"User ID: {user_id}")
+        print(f"Pet ID (from Petfinder): {pet_id}")
+        print(f"Pet data keys: {pet.keys() if pet else 'No pet data'}")
+        
+        # Validate required data
+        if not user_id or not pet_id:
+            print("ERROR: Missing user_id or pet_id")
+            return jsonify({"success": False, "error": "user_id and pet_id required"}), 400
+        
+        if not pet:
+            print("ERROR: Missing pet data")
+            return jsonify({"success": False, "error": "pet data required"}), 400
+
+        # Check if pet already exists in database
+        existing_pet = Pet.query.filter_by(petfinder_id=pet_id).first()
+        print(f"Existing pet found: {existing_pet is not None}")
+        
+        if existing_pet:
+            print(f"Using existing pet with DB ID: {existing_pet.id}")
+            pet_db_id = existing_pet.id
+        else:
+            print("Creating new pet...")
+            
+            # Extract location safely
+            location = "Unknown"
+            if pet.get('contact') and pet['contact'].get('address'):
+                address = pet['contact']['address']
+                if address.get('city') and address.get('state'):
+                    location = f"{address['city']}, {address['state']}"
+                elif address.get('address1'):
+                    location = address['address1']
+            
+            # Extract image URL safely
+            image_url = None
+            if pet.get('photos') and len(pet['photos']) > 0:
+                image_url = pet['photos'][0].get('full')
+            
+            # Extract breed safely
+            breed = "Mixed"
+            if pet.get('breeds') and pet['breeds'].get('primary'):
+                breed = pet['breeds']['primary']
+            
+            print(f"Creating pet with: name={pet.get('name')}, location={location}, breed={breed}")
+            
+            new_pet = Pet(
+                petfinder_id=pet_id,
+                name=pet.get("name", "Unknown"),
+                age=pet.get('age', 'Unknown'),
+                location=location,
+                image_url=image_url,
+                gender=pet.get('gender', 'Unknown'),
+                breed=breed,
+                activity=str(pet.get('tags', [])),
+                size=pet.get("size", "Unknown")
+            )
+            
+            db.session.add(new_pet)
+            db.session.flush()  # Get ID without committing
+            pet_db_id = new_pet.id
+            print(f"New pet created with DB ID: {pet_db_id}")
+
+        # Check if favorite already exists
+        existing_favorite = Favorite.query.filter_by(
+            user_id=user_id, pet_id=pet_db_id).first()
+        
+        if existing_favorite:
+            print("ERROR: Favorite already exists")
+            return jsonify({"success": False, "error": "Pet is already in favorites"}), 400
+
+        # Create favorite
+        print(f"Creating favorite: user_id={user_id}, pet_id={pet_db_id}")
+        favorite = Favorite(user_id=user_id, pet_id=pet_db_id)
+        db.session.add(favorite)
+        db.session.commit()
+        
+        print("SUCCESS: Favorite saved to database!")
+        print(f"Favorite ID: {favorite.id}")
+        
+        return jsonify({"success": True, "data": favorite.to_dict()}), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"ERROR in add_favorite: {str(e)}")
+        print(f"Error type: {type(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "error": f"Internal server error: {str(e)}"}), 500
 
 @api.route('/favorites/<int:favorite_id>', methods=['DELETE'])
 def delete_favorite(favorite_id):

@@ -122,6 +122,9 @@ class Pet(db.Model):
     weight = db.Column(db.String(50), nullable=True)
     breed = db.Column(db.String(100))
     activity = db.Column(db.String(512))
+    size = db.Column(db.String(50))
+    email = db.Column(db.String(50))
+    phone = db.Column(db.String(50))
 
     # Relationship to access all favorites for this pet
     favorites = db.relationship(
@@ -140,5 +143,7 @@ class Pet(db.Model):
             "gender": self.gender,
             "weight": self.weight,
             "breed": self.breed,
-            "activity": self.activity
+            "activity": self.activity,
+            "email": self.email,
+            "phone": self.phone
         }
