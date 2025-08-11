@@ -8,6 +8,7 @@ db = SQLAlchemy()
 
 
 class User(db.Model):
+    __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(String(80), nullable=False)
     last_name = db.Column(String(80), nullable=False)
@@ -71,35 +72,35 @@ class Favorite(db.Model):
 # User model
 
 
-class User(db.Model):
-    __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(String(200), nullable=False)
+# class User(db.Model):
+#     __tablename__ = 'users'
+#     id = db.Column(db.Integer, primary_key=True)
+#     username = db.Column(db.String(80), unique=True, nullable=False)
+#     email = db.Column(db.String(120), unique=True, nullable=False)
+#     password = db.Column(String(200), nullable=False)
 
-    # Relationship to access a user's favorites
-    favorites = db.relationship(
-        'Favorite', back_populates='user', cascade='all, delete-orphan')
+#     # Relationship to access a user's favorites
+#     favorites = db.relationship(
+#         'Favorite', back_populates='user', cascade='all, delete-orphan')
 
-    # Social feed relationships
-    posts = db.relationship('Post', back_populates='user',
-                            cascade='all, delete-orphan')
-    post_likes = db.relationship(
-        'PostLike', back_populates='user', cascade='all, delete-orphan')
-    post_comments = db.relationship(
-        'PostComment', back_populates='user', cascade='all, delete-orphan')
+#     # Social feed relationships
+#     posts = db.relationship('Post', back_populates='user',
+#                             cascade='all, delete-orphan')
+#     post_likes = db.relationship(
+#         'PostLike', back_populates='user', cascade='all, delete-orphan')
+#     post_comments = db.relationship(
+#         'PostComment', back_populates='user', cascade='all, delete-orphan')
 
-    def __repr__(self):
-        return f'<User {self.id} - {self.username}>'
+#     def __repr__(self):
+#         return f'<User {self.id} - {self.username}>'
 
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "username": self.username,
-            "email": self.email,
-            "favorites": [favorite.to_dict() for favorite in self.favorites]
-        }
+#     def to_dict(self):
+#         return {
+#             "id": self.id,
+#             "username": self.username,
+#             "email": self.email,
+#             "favorites": [favorite.to_dict() for favorite in self.favorites]
+#         }
 
 # Pet model
 
@@ -227,7 +228,7 @@ class Questionnaire(db.Model):
     yard = db.Column(db.String(10))
     owned_pets_before = db.Column(db.String(10))
 
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
     def to_dict(self):
         return {
@@ -289,7 +290,7 @@ class PostLike(db.Model):
             "breed": self.breed,
             "activity": self.activity,
             "email": self.email,
-            "phone": self.phone
+            "phone": self.phone,
             "user_id": self.user_id,
             "post_id": self.post_id,
             "created_at": self.created_at.isoformat() if self.created_at else None

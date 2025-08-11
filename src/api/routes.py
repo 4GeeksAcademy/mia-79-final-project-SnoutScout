@@ -434,35 +434,52 @@ def add_favorite():
     pet_id = data.get('pet_id')
     if not user_id or not pet_id:
         return jsonify({"success": False, "error": "user_id and pet_id required"}), 400
-
-    # Check if favorite already exists
+    # First, check if we have this pet in our database by petfinder_id
+    existing_pet = Pet.query.filter_by(petfinder_id=str(pet_id)).first()
+    if existing_pet:
+        # Pet exists, use the existing pet's database ID
+        db_pet_id = existing_pet.id
+    else:
+        # Pet doesn't exist, create it
+        try:
+            new_pet = Pet(
+                petfinder_id=str(pet_id),  # Store as string to match your model
+                name=pet["name"],
+                age=pet.get('age', ''),
+                location=pet.get('contact', {}).get('address', {}).get('address1', ''),
+                image_url=pet.get('photos', [{}])[0].get('full') if pet.get('photos') else None,
+                gender=pet.get('gender', ''),
+                breed=pet.get('breeds', {}).get('primary', ''),
+                activity=str(pet.get('tags', [])),
+                status=pet.get('status', ''),
+                description=pet.get('description', ''),
+                organization_id=pet.get('organization_id', ''),
+                url=pet.get('url', ''),
+                published_at=pet.get('published_at', ''),
+                contact=str(pet.get('contact', {}))  # Store as JSON string
+            )
+            db.session.add(new_pet)
+            db.session.commit()
+            db.session.refresh(new_pet)
+            db_pet_id = new_pet.id
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"success": False, "error": f"Failed to create pet: {str(e)}"}), 500
+    # Check if favorite already exists using the database pet ID
     existing_favorite = Favorite.query.filter_by(
-        user_id=user_id, pet_id=pet_id).first()
+        user_id=user_id, pet_id=db_pet_id).first()
     if existing_favorite:
         return jsonify({"success": False, "error": "Pet is already in favorites"}), 400
-    pet_exists = Pet.query.get(pet_id)
-    if not pet_exists:
-        new_pet = Pet(
-            petfinder_id=pet_id,
-            name=pet["name"],
-            age=pet['age'],
-            location=pet['contact']['address']['address1'],
-            image_url=pet['photos'][0]['full'] if pet['photos'] else None,
-            gender=pet['gender'],
-            breed=pet['breeds']['primary'],
-            activity=str(pet['tags']),
-            size=pet["size"],   
-            email=pet["contact"].get("email",""),
-            phone=pet["contact"].get("phone",""),      
-        )
-        db.session.add(new_pet)
+    # Create the favorite
+    try:
+        favorite = Favorite(user_id=user_id, pet_id=db_pet_id)
+        db.session.add(favorite)
         db.session.commit()
-        db.session.refresh(new_pet)
+        return jsonify({"success": True, "data": favorite.to_dict()}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "error": f"Failed to create favorite: {str(e)}"}), 500
 
-    favorite = Favorite(user_id=user_id, pet_id=new_pet.id)
-    db.session.add(favorite)
-    db.session.commit()
-    return jsonify({"success": True, "data": favorite.to_dict()}), 201
 
 # @api.route('/favorites', methods=['POST'])
 # @jwt_required()

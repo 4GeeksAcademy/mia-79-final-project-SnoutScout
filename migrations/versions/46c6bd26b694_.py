@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: cda62fb37c2a
+Revision ID: 46c6bd26b694
 Revises: 
-Create Date: 2025-08-11 16:56:42.071704
+Create Date: 2025-08-11 21:56:32.824271
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'cda62fb37c2a'
+revision = '46c6bd26b694'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -38,7 +38,7 @@ def upgrade():
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('petfinder_id')
     )
-    op.create_table('user',
+    op.create_table('users',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('first_name', sa.String(length=80), nullable=False),
     sa.Column('last_name', sa.String(length=80), nullable=False),
@@ -47,15 +47,6 @@ def upgrade():
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email')
-    )
-    op.create_table('users',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('username', sa.String(length=80), nullable=False),
-    sa.Column('email', sa.String(length=120), nullable=False),
-    sa.Column('password', sa.String(length=200), nullable=False),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('email'),
-    sa.UniqueConstraint('username')
     )
     op.create_table('favorites',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -97,7 +88,7 @@ def upgrade():
     sa.Column('yard', sa.String(length=10), nullable=True),
     sa.Column('owned_pets_before', sa.String(length=10), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('post_comments',
@@ -113,6 +104,18 @@ def upgrade():
     )
     op.create_table('post_likes',
     sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('petfinder_id', sa.Integer(), nullable=False),
+    sa.Column('name', sa.String(length=100), nullable=False),
+    sa.Column('age', sa.String(length=50), nullable=True),
+    sa.Column('location', sa.String(length=256), nullable=True),
+    sa.Column('image_url', sa.String(length=512), nullable=True),
+    sa.Column('gender', sa.String(length=20), nullable=True),
+    sa.Column('weight', sa.String(length=50), nullable=True),
+    sa.Column('breed', sa.String(length=100), nullable=True),
+    sa.Column('activity', sa.String(length=512), nullable=True),
+    sa.Column('size', sa.String(length=50), nullable=True),
+    sa.Column('email', sa.String(length=50), nullable=True),
+    sa.Column('phone', sa.String(length=50), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('post_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['post_id'], ['posts.id'], ),
@@ -132,6 +135,5 @@ def downgrade():
     op.drop_table('messages')
     op.drop_table('favorites')
     op.drop_table('users')
-    op.drop_table('user')
     op.drop_table('pets')
     # ### end Alembic commands ###
