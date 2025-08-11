@@ -7,36 +7,43 @@ from datetime import datetime
 db = SQLAlchemy()
 
 
-# class User(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     first_name = db.Column(String(80), nullable=False)
-#     last_name = db.Column(String(80), nullable=False)
-#     email = db.Column(String(120), unique=True, nullable=False)
-#     password = db.Column(String(200), nullable=False)
-#     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(String(80), nullable=False)
+    last_name = db.Column(String(80), nullable=False)
+    email = db.Column(String(120), unique=True, nullable=False)
+    password = db.Column(String(200), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-#     questionnaire = db.relationship(
-#         "Questionnaire", backref="user", uselist=False)
-#     favorites = db.relationship(
-#         'Favorite', back_populates='user', cascade='all, delete-orphan')
+    questionnaire = db.relationship(
+        "Questionnaire", backref="user", uselist=False)
+    favorites = db.relationship(
+        'Favorite', back_populates='user', cascade='all, delete-orphan')
+     # Social feed relationships
+    posts = db.relationship('Post', back_populates='user',
+                            cascade='all, delete-orphan')
+    post_likes = db.relationship(
+        'PostLike', back_populates='user', cascade='all, delete-orphan')
+    post_comments = db.relationship(
+        'PostComment', back_populates='user', cascade='all, delete-orphan')
 
-#     def __init__(self, first_name, last_name, email, password):
-#         self.first_name = first_name
-#         self.last_name = last_name
-#         self.email = email
-#         self.password = generate_password_hash(password)
+    def __init__(self, first_name, last_name, email, password):
+        self.first_name = first_name
+        self.last_name = last_name
+        self.email = email
+        self.password = generate_password_hash(password)
 
-#     def check_password(self, password_input):
-#         return check_password_hash(self.password, password_input)
+    def check_password(self, password_input):
+        return check_password_hash(self.password, password_input)
 
-#     def to_dict(self):
-#         return {
-#             "id": self.id,
-#             "first_name": self.first_name,
-#             "last_name": self.last_name,
-#             "email": self.email,
-#             "created_at": self.created_at.isoformat()
-#         }
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "email": self.email,
+            "created_at": self.created_at.isoformat()
+        }
 
 
 
@@ -166,12 +173,6 @@ class Post(db.Model):
         'PostLike', back_populates='post', cascade='all, delete-orphan')
     comments = db.relationship(
         'PostComment', back_populates='post', cascade='all, delete-orphan')
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    pet_id = db.Column(db.Integer, db.ForeignKey('pets.id'), nullable=False)
-
-    # Relationship to access
-    user = db.relationship('User', back_populates='favorites')
-    pet = db.relationship('Pet', back_populates='favorites')
 
     def __repr__(self):
         return f'<Post {self.id} - {self.title}>'
@@ -180,26 +181,7 @@ class Post(db.Model):
         return {
             "id": self.id,
             "user_id": self.user_id,
-            "pet_id": self.pet_id,
-            "pet": self.pet.to_dict() if self.pet else None
-        }
-# "favorites": [favorite.to_dict() for favorite in self.favorites]
-
-
-class Message(db.Model):
-    id: Mapped[int] = mapped_column(primary_key=True)
-    message_from: Mapped[int] = mapped_column(
-        db.ForeignKey('user.id'), nullable=False)
-    message_to: Mapped[int] = mapped_column(
-        db.ForeignKey('user.id'), nullable=False)
-    content: Mapped[str] = mapped_column(nullable=False)
-    created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now)
-
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "message_from": self.message_from,
-            "message_to": self.message_to,
+            "title": self.title,
             "content": self.content,
             "image_url": self.image_url,
             "created_at": self.created_at.isoformat() if self.created_at else None,
@@ -209,6 +191,29 @@ class Message(db.Model):
             "comments_count": len(self.comments),
             "is_liked_by_current_user": False  # Will be set by the API
         }
+
+
+class Message(db.Model):
+    __tablename__= 'messages'
+    id: Mapped[int] = mapped_column(primary_key=True)
+    message_from: Mapped[int] = mapped_column(
+        db.ForeignKey('users.id'), nullable=False)
+    message_to: Mapped[int] = mapped_column(
+        db.ForeignKey('users.id'), nullable=False)
+    content: Mapped[str] = mapped_column(nullable=False)
+    created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now)
+
+
+  
+
+    def to_dict(self):
+        return {
+        "id": self.id,
+        "message_from": self.message_from,
+        "message_to": self.message_to,
+        "content": self.content,
+        "created_at": self.created_at.isoformat() if self.created_at else None
+    }
 
 
 class Questionnaire(db.Model):

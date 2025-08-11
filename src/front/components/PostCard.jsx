@@ -11,7 +11,8 @@ function PostCard({ post, onDelete, onToggleLike, onAddComment, onDeleteComment 
     const [submittingComment, setSubmittingComment] = useState(false);
 
     // API base URL
-    const API_BASE_URL = 'http://localhost:3001/api';
+    // const API_BASE_URL = 'http://localhost:3001/api';
+    const API_BASE_URL = `${import.meta.env.VITE_BACKEND_URL}api`;
 
     // Fetch comments for this post
     const fetchComments = async () => {
