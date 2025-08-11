@@ -4,13 +4,14 @@ import useGlobalReducer from '../hooks/useGlobalReducer';
 
 // API base URL
 const API_BASE_URL = `${import.meta.env.VITE_BACKEND_URL}`;
+
 /**
  * PetCard component 
  * @param {Object} pet - The pet object 
  * @param {Function} onRemoveFavorite - Callback function to remove pet from favorites
  * @param {number} favoriteId - ID of the favorite record
  */
-function PetCard({ pet, onRemoveFavorite, favoriteId }) {
+function PetCard({ pet, onRemoveFavorite, favoriteId, onContactClick }) {
     const handleRemoveFavorite = async () => {
         try {
             await onRemoveFavorite(favoriteId);
@@ -32,7 +33,6 @@ function PetCard({ pet, onRemoveFavorite, favoriteId }) {
                 ♥
             </span>
             <div className="card-body">
-
                 <h5 className="favorites-card-title card-title mb-1">{pet.name}</h5>
 
                 <div className="text-muted" style={{ fontSize: '0.95rem' }}>{pet.age}</div>
@@ -41,7 +41,6 @@ function PetCard({ pet, onRemoveFavorite, favoriteId }) {
                     <span className="me-1" role="img" aria-label="Location">📍</span>
                     {pet.location}
                 </div>
-
 
                 <div className="mb-3">
                     {pet.breed && (
@@ -66,9 +65,12 @@ function PetCard({ pet, onRemoveFavorite, favoriteId }) {
                     )}
                 </div>
 
-
-                <button className="btn favorites-btn w-100 mb-2">
-                    Apply to Adopt
+                <button 
+                    type="button" 
+                    className="btn favorites-btn w-100 mb-2" 
+                    onClick={() => onContactClick(pet)}
+                >
+                    Contact Shelter
                 </button>
 
                 <button
@@ -80,20 +82,23 @@ function PetCard({ pet, onRemoveFavorite, favoriteId }) {
             </div>
         </div>
     );
+
 }
 
-
-function Favorites() {
+const Favorites = () => {
     const [favorites, setFavorites] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const { store, dispatch } = useGlobalReducer();
+
+    const [showModal, setShowModal] = useState(false);
+    const [selectedPet, setSelectedPet] = useState(null);
+
     // Fetch favorites 
     const fetchFavorites = async () => {
         try {
             setLoading(true);
             setError(null);
-
 
             const response = await fetch(`${API_BASE_URL}api/favorite`);
 
@@ -252,12 +257,47 @@ function Favorites() {
                             pet={favorite.pet}
                             onRemoveFavorite={removeFavorite}
                             favoriteId={favorite.id}
+                            onContactClick={(pet) => {
+                                setSelectedPet(pet);
+                                setShowModal(true);
+                            }}
                         />
                     </div>
                 ))}
             </div>
+
+            {showModal && selectedPet && (
+                <div className="modal show d-block" tabIndex="-1" role="dialog">
+                    <div className="modal-dialog" role="document">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Contact Shelter</h5>
+                                <button
+                                    type="button"
+                                    className="btn-close"
+                                    aria-label="Close"
+                                    onClick={() => setShowModal(false)}
+                                ></button>
+                            </div>
+                            <div className="modal-body">
+                                <p><strong>Shelter Name:</strong> {selectedPet.organization_id || "Unavailable"}</p>
+                                <p><strong>Email:</strong> {selectedPet.email || "Email not available"}</p>
+                                <p><strong>Phone:</strong> {selectedPet.phone || "Phone not available"}</p>
+                            </div>
+                            <div className="modal-footer">
+                                <button
+                                    className="btn btn-secondary"
+                                    onClick={() => setShowModal(false)}
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
-}
+};
 
-export default Favorites; 
+export default Favorites

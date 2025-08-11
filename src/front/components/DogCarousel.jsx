@@ -33,6 +33,7 @@ import useGlobalReducer from '../hooks/useGlobalReducer';
 export default function DogCarousel() {
   const [current, setCurrent] = useState(0);
   const { store, dispatch } = useGlobalReducer();
+  
   const PetAuth = async () => {
     const url = `${import.meta.env.VITE_BACKEND_URL}api/pets`;
     const result = await fetch(url, {
@@ -43,7 +44,15 @@ export default function DogCarousel() {
       },
     })
     let body = await result.json();
-    body = body.filter((pet) => !!pet.photos && pet.photos.length > 1)
+    
+    // Filter pets: must have photos AND personality tags
+    body = body.filter((pet) => 
+      !!pet.photos && 
+      pet.photos.length > 1 && 
+      pet.tags && 
+      pet.tags.length > 0
+    );
+    
     dispatch({
       type: "set_pets",
       payload: body
@@ -59,12 +68,13 @@ export default function DogCarousel() {
     const getTokenAndFetchPets = async () => await PetAuth();
     getTokenAndFetchPets();
   }, []);
+
   return (
     <Container className="d-flex justify-content-center align-items-center my-5">
       <Button variant="outline-secondary" onClick={prev} aria-label="Previous">
         ‹
       </Button>
-      {!!store.pets && store.pets.length > 1 && (
+      {!!store.pets && store.pets.length > 0 && (
         <DogCard dog={store.pets[current]}
           onFavorite={next}  // advance after a favorite
           onSkip={next}

@@ -250,9 +250,20 @@ class Questionnaire(db.Model):
 class PostLike(db.Model):
     __tablename__ = 'post_likes'
     id = db.Column(db.Integer, primary_key=True)
+    petfinder_id = db.Column(db.Integer, nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    age = db.Column(db.String(50))
+    location = db.Column(db.String(256))
+    image_url = db.Column(db.String(512))
+    gender = db.Column(db.String(20))
+    weight = db.Column(db.String(50), nullable=True)
+    breed = db.Column(db.String(100))
+    activity = db.Column(db.String(512))
+    size = db.Column(db.String(50))
+    email = db.Column(db.String(50))
+    phone = db.Column(db.String(50))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
-   
    
 
     # Relationships
@@ -269,6 +280,16 @@ class PostLike(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
+            "name": self.name,
+            "age": self.age,
+            "location": self.location,
+            "image_url": self.image_url,
+            "gender": self.gender,
+            "weight": self.weight,
+            "breed": self.breed,
+            "activity": self.activity,
+            "email": self.email,
+            "phone": self.phone
             "user_id": self.user_id,
             "post_id": self.post_id,
             "created_at": self.created_at.isoformat() if self.created_at else None
