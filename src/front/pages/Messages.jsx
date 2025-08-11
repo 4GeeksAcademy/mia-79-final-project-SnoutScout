@@ -108,64 +108,118 @@ export const Messages = () => {
       await sendMessage(newMessage);
     } catch (err) {
       setError("Failed to send messages");
-      // TODO: Handle error (maybe revert optimistic update)
+      
     }
   };
 
   if (loading) return <div>Loading...</div>;
 
   return (
-    <div className="container d-flex m-3 ms-5">
-      {/* Left Sidebar - Contact Tabs - Contact */}
-      <div className="conversations-box border me-3"
-        style={{ color: "white", backgroundColor: "#FFE3BB" }}>
-        <h1 className="conversations-header p-1 d-flex justify-content-center"
-          style={{ backgroundColor: "#FFA673" }}>
-          Conversations
-        </h1>
-        <div className="contacts">
-          {store.contacts.map(contact => (
-            <Contact
-              key={contact.id}
-              contact={contact}
-              isActive={store.activeContact?.id === contact.id}
-              onClick={() => dispatch({
-                type: 'set_active_contact',
-                payload: contact
-              })}
-            />
-          ))}
+    <div className="page-body" 
+      style={{ background: 
+        "linear-gradient(45deg, #F0FDFF 0%, #C2F5E9 50%, #E0F7FA 100%)"
+        }}>
+      <div className="contacts-chatbox-container d-flex m-3 ms-5" style={{
+        maxWidth: "1200px",
+        borderRadius: "20px",
+        padding: "20px"
+      }}>
+
+        {/* Left Sidebar - Conversations - Contact Tabs */}
+
+        <div className="conversations-box rounded-4 me-4 shadow"
+          style={{
+            backgroundColor: "#FFFFFF",
+            minWidth: "300px",
+            border: "2px solid #FFD6A5",
+            background: "linear-gradient(to bottom, #FFF5E9 0%, #FFFFFF 100%)"
+          }}>
+          <h1 className="conversations-header p-3 rounded-top-4 d-flex justify-content-center fw-bold"
+            style={{
+              background: "linear-gradient(to right, #FF9B50, #FF7B54)",
+              color: "#FFFFFF",
+              fontSize: "1.5rem",
+              letterSpacing: "1px",
+              textShadow: "1px 1px 2px rgba(0,0,0,0.1)"
+            }}>
+            Conversations
+          </h1>
+          <div className="contacts p-2">
+            {store.contacts.length > 0 ? (
+              store.contacts.map(contact => (
+                <Contact
+                  key={contact.id}
+                  contact={contact}
+                  isActive={store.activeContact?.id === contact.id}
+                  onClick={() => dispatch({
+                    type: 'set_active_contact',
+                    payload: contact
+                  })}
+                />
+              ))
+            ) : (
+              <div className="default-contact-tab d-flex justify-content-center align-items-center rounded-3 p-3"
+                style={{
+                  height: "100px",
+                  backgroundColor: "rgba(155, 229, 236, 0.2)", 
+                  border: "2px dashed rgba(155, 229, 236, 0.5)"  
+                }}>
+                <p className="m-0 fw-medium" style={{ color: "#FF9B50" }}>No contacts yet!</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Side - ChatBox */}
+
+        <div className="chatbox-container rounded-4 shadow"
+          style={{
+            backgroundColor: "#FFFFFF",
+            minHeight: "500px",
+            border: "2px solid #FFD6A5",
+            flex: 1,
+            background: "linear-gradient(to bottom, #FFF5E9 0%, #FFFFFF 100%)"
+          }}>
+          {store.activeContact ? (
+            <>
+              <div className="chatbox-header d-flex align-items-center p-3 rounded-top-4"
+                style={{
+                  background: "linear-gradient(to right, #FF9B50, #FF7B54)",
+                  height: "95px"
+                }}>
+                <div className="image-container me-3">
+                  <img
+                    src="data:image/png;base64,iVBORw0KGgo..."
+                    className="rounded-circle border-3 border-white shadow-sm"
+                    alt="..."
+                    width="70px"
+                    height="70px"
+                  />
+                </div>
+                <div className="name-title">
+                  <h3 className="m-0 fw-bold" style={{ color: "#FFFFFF" }}>{store.activeContact.name}</h3>
+                  <h4 className="m-0 mt-1" style={{ color: "#9BE5EC" }}>{store.activeContact.title}</h4>  {/* Cyan accent */}
+                </div>
+              </div>
+              <ChatBox
+                messages={store.messages[store.activeContact.id] || []}
+                currentUser={store.user}
+                onSendMessage={handleSendMessage}
+              />
+            </>
+          ) : (
+            <div className="d-flex flex-column justify-content-center align-items-center h-100 p-5 text-center"
+              style={{
+                color: "#FF9B50",
+                background: "radial-gradient(circle, rgba(155,229,236,0.1) 0%, rgba(255,255,255,0) 100%)"  
+              }}>
+              <div className="mb-3" style={{ fontSize: "3rem" }}>👋</div>
+              <h3 className="fw-bold mb-2" style={{ color: "#FF7B54" }}>Start chatting!</h3>
+              <p className="m-0" style={{ color: "#9BE5EC" }}>Select a contact to begin your conversation</p>  
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Right Side - Conversations - Chatbox */}
-      {store.activeContact && (
-        <div className="chatbox-container border col-9"
-          style={{ color: "white", backgroundColor: "#FFE3BB" }}>
-          <div className="chatbox-header d-flex p-1"
-            style={{ backgroundColor: "#FFA673", height: "95px" }}>
-            <div className="image-container m-1 p-1">
-              <img
-                src="data:image/png;base64,iVBORw0KGgo..."
-                className="rounded-circle"
-                alt="..."
-                width="70px"
-                height="70px"
-              />
-            </div>
-            <div className="name-title mt-1 ps-1">
-              <h3 style={{ color: "black" }}>{store.activeContact.name}</h3>
-              <h4 style={{ color: "#808080" }}>{store.activeContact.title}</h4>
-            </div>
-          </div>
-          {/* ChatBox with messages prop */}
-          <ChatBox
-            messages={store.messages[store.activeContact.id] || []}
-            currentUser={store.user}
-            onSendMessage={handleSendMessage}
-          />
-        </div>
-      )}
     </div>
   );
 };

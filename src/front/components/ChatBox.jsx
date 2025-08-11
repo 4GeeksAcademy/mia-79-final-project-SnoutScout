@@ -12,13 +12,14 @@ export const ChatBox = ({ messages, currentUser, onSendMessage }) => {
   };
 
   return (
-      <div className="container">
+    <div className="container">
+      
       <div className="chatbox">
         {messages.map((msg) => (
-          <div 
+          <div
             key={msg.id || msg.created_at}
             className={`message ${msg.message_from === currentUser ? 'sent' : 'received'} border m-4 p-2`}
-            style={{ 
+            style={{
               textAlign: msg.message_from === currentUser ? 'right' : 'left',
               textColor: "black",
               backgroundColor: msg.message_from === 0 ? "#FFA673" : "#FFFFFF80",
@@ -37,7 +38,7 @@ export const ChatBox = ({ messages, currentUser, onSendMessage }) => {
 
       {/* Chat Input */}
 
-      <form onSubmit={handleSubmit} className="message-input d-flex" style={{ padding: '10px'}}>
+      <form onSubmit={handleSubmit} className="message-input d-flex" style={{ padding: '10px' }}>
         <input
           type="text"
           value={newMessage}
@@ -48,14 +49,14 @@ export const ChatBox = ({ messages, currentUser, onSendMessage }) => {
         <button
           type="submit"
           style={{
-            marginLeft: '10px', 
+            marginLeft: '10px',
             padding: '8px 15px',
             borderRadius: '20px',
             border: 'none',
             backgroundColor: "#FFA673",
             color: 'white'
           }}
-        > Send 
+        > Send
         </button>
       </form>
     </div>
