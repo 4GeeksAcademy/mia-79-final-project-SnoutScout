@@ -8,10 +8,13 @@ from flask_swagger import swagger
 from api.utils import APIException, generate_sitemap
 from api.models import db
 from api.routes import api
+# new import
+from api.social_routes import social_bp
 from api.admin import setup_admin
 from api.commands import setup_commands
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
+
 
 app = Flask(__name__)
 
@@ -52,10 +55,12 @@ db.init_app(app)
 setup_admin(app)
 
 # add the admin
+app.register_blueprint(social_bp)
 setup_commands(app)
 
 # Add all endpoints form the API with a "api" prefix
 app.register_blueprint(api, url_prefix='/api')
+
 
 # Handle/serialize errors like a JSON object
 

@@ -24,6 +24,7 @@ import Login from "./pages/Login";
 
 import Favorites from "./pages/Favorites"
 import Pets from "./pages/Pets";
+import SocialFeed from "./pages/SocialFeed";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -53,6 +54,8 @@ export const router = createBrowserRouter(
       <Route path="/login" element={<Login />} />
       <Route path="/favorites" element={<Favorites />} />
       <Route path="/pets" element={<Pets />} />
+      <Route path="/socialfeed" element={<SocialFeed />} />
+
 
 
 
