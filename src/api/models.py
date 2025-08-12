@@ -111,11 +111,15 @@ class Pet(db.Model):
     name = db.Column(db.String(100), nullable=False)
     age = db.Column(db.String(50))
     location = db.Column(db.String(100))
-    image_url = db.Column(db.String(255))
+    image_url = db.Column(db.String(1000))
     gender = db.Column(db.String(20))
     weight = db.Column(db.String(50))
     breed = db.Column(db.String(100))
-    activity = db.Column(db.String(100))
+    activity = db.Column(db.String(500))
+    email = db.Column(db.String(200))
+    phone = db.Column(db.String(200))
+    city = db.Column(db.String(200))
+    state = db.Column(db.String(200))
 
     # Additional fields for Petfinder integration
     # Petfinder's animal ID
@@ -149,7 +153,11 @@ class Pet(db.Model):
             "description": self.description,
             "status": self.status,
             "url": self.url,
-            "published_at": self.published_at
+            "published_at": self.published_at,
+            "email" : self.email,
+            "phone" : self.phone,
+            "city" : self.city,
+            "state" : self.state,
         }
 
 # Social Feed Models

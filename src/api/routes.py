@@ -411,8 +411,11 @@ def sync_pets_from_petfinder():
 
 
 @api.route('/favorite', methods=['GET'])
-def get_test():
-    user_id = 1
+@jwt_required()
+def get_favorites():
+    user_id = int(get_jwt_identity())  # Current logged-in user's ID
+    favorites = Favorite.query.filter_by(user_id=user_id).all()
+    
     if not user_id:
         return jsonify({"success": False, "error": "user_id is required"}), 400
 
@@ -456,7 +459,11 @@ def add_favorite():
                 organization_id=pet.get('organization_id', ''),
                 url=pet.get('url', ''),
                 published_at=pet.get('published_at', ''),
-                contact=str(pet.get('contact', {}))  # Store as JSON string
+                email=str(pet.get('contact', {}).get('email', {})),
+                phone=str(pet.get('contact', {}).get('phone', {})),  
+                city=pet.get('contact', {}).get('address', {}).get('city', ''),
+                state=pet.get('contact', {}).get('address', {}).get('state', ''),
+                
             )
             db.session.add(new_pet)
             db.session.commit()
@@ -641,14 +648,18 @@ def add_favorite():
 #     return jsonify({"success": True, "data": favorite.to_dict()}), 201
 
 
-# @api.route('/favorites/<int:favorite_id>', methods=['DELETE'])
-# def delete_favorite(favorite_id):
-#     favorite = Favorite.query.get(favorite_id)
-#     if not favorite:
-#         return jsonify({"success": False, "error": "Favorite not found"}), 404
-#     db.session.delete(favorite)
-#     db.session.commit()
-#     return jsonify({"success": True, "message": "Favorite deleted"})
+@api.route('/favorites/<int:favorite_id>', methods=['DELETE'])
+@jwt_required()
+def delete_favorite(favorite_id):
+    user_id = int(get_jwt_identity())
+    if not user_id:
+        return jsonify({"success": False, "error": "user_id required"}), 400
+    favorite = Favorite.query.filter_by(id=favorite_id, user_id=user_id).first()
+    if not favorite:
+        return jsonify({"success": False, "error": "Favorite not found"}), 404
+    db.session.delete(favorite)
+    db.session.commit()
+    return jsonify({"success": True, "message": "Favorite deleted"})
 
 
 @api.route('/users', methods=['GET'])
