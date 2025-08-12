@@ -33,6 +33,7 @@ const Login = () => {
         }
       }); 
       // store token in localStorage (Ryan recommendation)
+      localStorage.setItem("token", data.token);
 
       console.log("Logged in:", data);
       navigate("/");

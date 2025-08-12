@@ -12,25 +12,31 @@ export const Profile = () => {
 
     useEffect(() => {
         fetchProfile();
-    }, [dispatch, navigate]);  
+    }, [dispatch, navigate]);
 
     const fetchProfile = async () => {
-        const token = store.user.token
-            const response = await fetch(`${apiUrl}api/profile`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            })
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error("Error fetching profile:", errorData);
-                alert("Failed to fetch profile. Please try again.");
-                return;
-            }
-            const data = await response.json();
-            dispatch({ type: "set_user", payload: data.user });
-            return
-        };
+        const token = localStorage.getItem("token");
+        console.log("Profile fetch token:", token);
+        if (!token) {
+            console.error("No token found, redirecting to login.");
+            return;
+        }
+
+        const response = await fetch(`${apiUrl}api/profile`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+        })
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Error fetching profile:", errorData);
+            alert("Failed to fetch profile. Please try again.");
+            return;
+        }
+        const data = await response.json();
+        dispatch({ type: "set_user", payload: data.user });
+        return
+    };
     const handleUpdateProfile = async () => {
 
         const response = await fetch(`${apiUrl}api/profile`, {
