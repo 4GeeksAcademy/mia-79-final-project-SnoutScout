@@ -31,7 +31,9 @@ const Login = () => {
           user: data.user,
           token: data.token
         }
-      });
+      }); 
+      // store token in localStorage (Ryan recommendation)
+
       console.log("Logged in:", data);
       navigate("/");
     } catch (err) {

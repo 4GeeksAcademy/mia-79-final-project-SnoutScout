@@ -3,154 +3,181 @@ import { useState, useEffect } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 
 export const Profile = () => {
-  const navigate = useNavigate();
-  const { store, dispatch } = useGlobalReducer();
-  const [bio, setBio] = useState(
-    `${store.user.bio || "This user has no bio."}`
-  );
-  const apiUrl = import.meta.env.VITE_BACKEND_URL;
+    const navigate = useNavigate();
+    const { store, dispatch } = useGlobalReducer();
+    const [bio, setBio] = useState(
+        `${store.user.bio || "This user has no bio."}`
+    );
+    const apiUrl = import.meta.env.VITE_BACKEND_URL;
 
-  useEffect(() => {
-    // check authentication to make sure user is logged in
-    const token = localStorage.getItem("token");
-    if (!token) {
-      // Redirect to login if not authenticated
-      navigate("/login");
-      return;
-    }
+    useEffect(() => {
+        fetchProfile();
+    }, [dispatch, navigate]);  
 
-    // GET request to fetch user profile data
     const fetchProfile = async () => {
-      const token = localStorage.getItem("token");
-      await fetch(`${apiUrl}api/profile`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Failed to fetch profile data");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          dispatch({ type: "SET_USER", payload: data.user });
-          setBio(data.user.bio || "This user has no bio.");
-        })
-        .catch((error) => {
-          console.error("Error fetching profile data:", error);
-          alert("Failed to load profile data. Please try again later.");
+        const token = store.user.token
+            const response = await fetch(`${apiUrl}api/profile`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            })
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("Error fetching profile:", errorData);
+                alert("Failed to fetch profile. Please try again.");
+                return;
+            }
+            const data = await response.json();
+            dispatch({ type: "set_user", payload: data.user });
+            return
+        };
+    const handleUpdateProfile = async () => {
+
+        const response = await fetch(`${apiUrl}api/profile`, {
+            method: 'PUT',
+            headers: {
+                "Content-Type": "application/json",
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                bio,
+            }),
         });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Error updating profile:", errorData);
+            alert("Failed to update profile. Please try again.");
+            return;
+        }
+        fetchProfile()
     };
-    fetchProfile();
-  }, [dispatch, navigate]);
 
-  // PUT request
-  const handleUpdateProfile = async () => {
-    const token = localStorage.getItem("token");
-
-    const response = await fetch(`${apiUrl}api/profile`, {
-      method: 'PUT',
-      headers: {
-        "Content-Type": "application/json",
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        bio,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Error updating profile:", errorData);
-      alert("Failed to update profile. Please try again.");
-      return;
-    }
-    const updatedUser = await response.json();
-    dispatch({ type: "SET_USER", payload: updatedUser });
-    setBio(updatedUser.bio || "You don't have a bio yet!");
-    alert("Profile updated successfully!");
-  };
-
-  return (
-    <div
-      className="page-body d-flex justify-content-center"
-      style={{
-        background: "linear-gradient(to right, #3f866c, #37bf5e)",
-      }}
-    >
-      <div
-        className="profile-body rounded-4 d-flex flex-column m-5 p-5"
-        style={{
-          minHeight: "600px",
-          minWidth: "1000px",
-          border: "3px solid #FFD6A5",
-          background: "linear-gradient(to bottom, #FFF8E1 0%, #FFFFFF 100%)",
-        }}
-      >
-        <div
-          className="profile-top d-flex rounded-3"
-          style={{
-            backgroundColor: "rgba(144, 238, 144, 0.2)",
-            border: "2px dashed rgba(50, 205, 50, 0.5)",
-          }}
-        >
-          {/* Profile Image */}
-          <div
-            className="profile-image rounded-circle m-3"
+    return (
+        <div className="page-body d-flex justify-content-center align-items-center"
             style={{
-              height: "250px",
-              width: "250px",
-              overflow: "hidden",
-              flexShrink: "0",
-              border: "3px solid #81C784", // Green border
-            }}
-          >
-            {/* user.profilepic OR default pic below */}
-            <img
-              src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
-              className="rounded-circle h-100 w-100"
-              alt="Profile"
-              style={{
-                objectFit: "cover",
-              }}
-            ></img>
-          </div>
-          <div
-            className="container-text d-flex flex-column ps-3"
-            style={{ width: "fit-content" }}
-          >
-            {/* Name */}
-            <div className="name pt-3">
-              <h2>
-                {store.user.first_name} {store.user.last_name}
-              </h2>
+                background: "linear-gradient(45deg, #E8F5E9 0%, #C8E6C9 50%, #E0F7FA 100%)",
+                minHeight: "100vh"
+            }}>
+            <div className="profile-container rounded-4 shadow p-4"
+                style={{
+                    width: "800px",
+                    border: "2px solid #81C784",
+                    background: "linear-gradient(to bottom, #E8F5E9 0%, #FFFFFF 100%)"
+                }}>
+
+                {/* Profile Content */}
+                <div className="profile-content d-flex">
+                    {/* Profile Image */}
+                    <div className="profile-image-container me-4"
+                        style={{ minWidth: "200px" }}>
+                        <div className="profile-image rounded-circle border border-3 border-success overflow-hidden"
+                            style={{
+                                width: "200px",
+                                height: "200px"
+                            }}>
+                            <img
+                                src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
+                                className="h-100 w-100"
+                                alt="Profile"
+                                style={{ objectFit: "cover" }}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Profile Details */}
+                    <div className="profile-details flex-grow-1">
+                        <div className="name-header mb-4 p-3 rounded"
+                            style={{
+                                background: "linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%)",
+                                border: "1px solid #1B5E20",
+                                boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
+                            }}>
+                            <h2 className="m-0 text-center" style={{
+                                color: "white",
+                                fontWeight: "600",
+                                fontSize: "1.8rem",
+                                letterSpacing: "0.5px",
+                                textShadow: "0 1px 2px rgba(0,0,0,0.2)"
+                            }}>
+                                {store.user.user.first_name} {store.user.user.last_name}
+                            </h2>
+                        </div>
+
+
+                        <div className="bio-container mb-4 p-3 rounded"
+                            style={{
+                                backgroundColor: "rgba(129, 199, 132, 0.1)",
+                                border: "1px solid #81C784"
+                            }}>
+                            <p className="m-0" style={{ color: "#4CAF50" }}>
+                                {store.user.user.bio || "This user has no bio."}
+                            </p>
+                        </div>
+
+                        <div className="profile-actions d-flex gap-2">
+                            <button type="button" className="btn btn-success">
+                                My Posts
+                            </button>
+                            <Link to="/messages" className="btn btn-info">
+                                My Messages
+                            </Link>
+                            <button
+                                type="button"
+                                className="btn btn-primary"
+                                data-bs-toggle="modal"
+                                data-bs-target="#staticBackdrop"
+                            >
+                                Edit Profile
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Photos Section */}
+                <div className="photos-section mt-4">
+                    <h4 className="fw-bold mb-3 text-center" style={{
+                        color: "#2E7D32",
+                        position: "relative",
+                        display: "inline-block",
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        padding: "0 20px",
+                        background: "linear-gradient(to right, transparent, #E8F5E9, transparent)",
+                        borderBottom: "2px solid #81C784"
+                    }}>
+                        My Photos
+                    </h4>
+                    <div className="photos-grid d-flex flex-wrap justify-content-around">
+                        {[1, 2, 3, 4].map((item) => (
+                            <div key={item} className="photo-item"
+                                style={{
+                                    width: "160px",
+                                    height: "160px",
+                                    border: "2px solid #81C784",
+                                    borderRadius: "10px",
+                                    overflow: "hidden",
+                                    background: "rgba(129, 199, 132, 0.1)",
+                                    margin: "10px",
+                                    transition: "transform 0.3s ease",
+                                    cursor: "pointer"
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
+                                onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}>
+                                <img
+                                    src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
+                                    className="h-100 w-100"
+                                    alt="Photo"
+                                    style={{ objectFit: "cover" }}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
 
-            {/* Bio, 250 max characters */}
-            <div className="bio">
-              <h5>{store.user.bio}</h5>
-            </div>
-            <div className="buttons d-flex gap-2">
-              {/* Changes what's below from pics/posts, both are squares */}
-              <button type="button" className="btn btn-info">
-                My Posts
-              </button>
-              {/* viewing your own page => your messages page 
-                                viewing someone else's page => create new contact, open fresh new conversation that */}
-              <Link to="/messages" className="btn btn-success">
-                My Messages
-              </Link>
-              {/* Edit Profile button, opens modal */}
-              <button
-                type="button"
-                className="btn btn-primary"
-                data-bs-toggle="modal"
-                data-bs-target="#staticBackdrop"
-              >
-                Edit Profile
-              </button>
-              <div
+            {/* Edit Profile Modal */}
+            <div
                 className="modal fade"
                 id="staticBackdrop"
                 data-bs-backdrop="static"
@@ -158,112 +185,52 @@ export const Profile = () => {
                 tabIndex="-1"
                 aria-labelledby="staticBackdropLabel"
                 aria-hidden="true"
-              >
+            >
                 <div className="modal-dialog">
-                  <div className="modal-content">
-                    <div className="modal-header">
-                      <h1 className="modal-title fs-5" id="staticBackdropLabel">
-                        Edit Your Bio!
-                      </h1>
-                      <button
-                        type="button"
-                        className="btn-close"
-                        data-bs-dismiss="modal"
-                        aria-label="Close"
-                      ></button>
+                    <div className="modal-content">
+                        <div className="modal-header" style={{
+                            background: "linear-gradient(to right, #4CAF50, #2E7D32)",
+                            color: "#FFFFFF"
+                        }}>
+                            <h1 className="modal-title fs-5" id="staticBackdropLabel">
+                                Edit Your Bio!
+                            </h1>
+                            <button
+                                type="button"
+                                className="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                            ></button>
+                        </div>
+                        <div className="modal-body">
+                            <input
+                                type="text"
+                                className="form-control mb-3"
+                                placeholder="Enter your bio..."
+                                value={bio}
+                                onChange={(e) => setBio(e.target.value)}
+                                style={{ border: "1px solid #81C784" }}
+                            />
+                        </div>
+                        <div className="modal-footer">
+                            <button
+                                type="button"
+                                className="btn btn-secondary"
+                                data-bs-dismiss="modal"
+                            >
+                                Close
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn-success"
+                                onClick={handleUpdateProfile}
+                            >
+                                Save Changes
+                            </button>
+                        </div>
                     </div>
-                    <div className="modal-body">
-                      <input
-                        type="text"
-                        className="form-control mb-3"
-                        placeholder=""
-                        value={bio}
-                        onChange={(e) => setBio(e.target.value)}
-                      />
-                    </div>
-                    <div className="modal-footer">
-                      <button
-                        type="button"
-                        className="btn btn-secondary"
-                        data-bs-dismiss="modal"
-                      >
-                        Close
-                      </button>
-                      <button type="button" className="btn btn-primary" onClick={handleUpdateProfile}>
-                        Save
-                      </button>
-                    </div>
-                  </div>
                 </div>
-              </div>
             </div>
-          </div>
         </div>
-
-        {/* Puppy Pics */}
-        <div className="container-pictures d-flex flex-wrap justify-content-around m-2 pt-3">
-          <div
-            className="grid-item-pic"
-            style={{
-              width: "250px",
-              height: "250px",
-              border: "2px solid #FFD6A5",
-              background: "#FFD8A8",
-            }}
-          >
-            <img
-              src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
-              className="p-2 h-100 w-100"
-              alt="Pictures"
-            ></img>
-          </div>
-          <div
-            className="grid-item-pic"
-            style={{
-              width: "250px",
-              height: "250px",
-              border: "2px solid #FFD6A5",
-              background: "#FFD8A8",
-            }}
-          >
-            <img
-              src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
-              className="p-2 h-100 w-100"
-              alt="Pictures"
-            ></img>
-          </div>
-          <div
-            className="grid-item-pic"
-            style={{
-              width: "250px",
-              height: "250px",
-              border: "2px solid #FFD6A5",
-              background: "#FFD8A8",
-            }}
-          >
-            <img
-              src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
-              className="p-2 h-100 w-100"
-              alt="Pictures"
-            ></img>
-          </div>
-          <div
-            className="grid-item-pic"
-            style={{
-              width: "250px",
-              height: "250px",
-              border: "2px solid #FFD6A5",
-              background: "#FFD8A8",
-            }}
-          >
-            <img
-              src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
-              className="p-2 h-100 w-100"
-              alt="Pictures"
-            ></img>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+    );
 };

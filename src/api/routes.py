@@ -216,12 +216,8 @@ def get_profile():
 
     if not user:
         return jsonify({"error": "User not found"}), 404
-    
+    print("User found:", user.to_dict())
     # Fetch dog pictures for the user
-    # dog_pictures = DogPicture.query.filter_by(user_id=user_id).all()
-    
-    response = user.to_dict()
-    # response['dog_pictures'] = [pic.to_dict() for pic in dog_pictures]
     
     return jsonify({"user": user.to_dict()}), 200
 

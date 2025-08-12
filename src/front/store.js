@@ -60,12 +60,12 @@ export default function storeReducer(store, action = {}) {
 
     // #store user object
     case "set_user":
-      localStorage.setItem("user", JSON.stringify(action.payload.user));
-      localStorage.setItem("token", action.payload.token);
       return {
         ...store,
-        user: action.payload.user,
-        token: action.payload.token,
+        user: {
+          ...store.user,
+          user: action.payload, // store the user object
+        }
       };
 
       
