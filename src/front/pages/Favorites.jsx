@@ -20,6 +20,9 @@ function PetCard({ pet, onRemoveFavorite, favoriteId, onContactClick }) {
         }
     };
 
+    // Create unique modal ID using pet.id
+    const modalId = `petModal-${pet.id}`;
+
     return (
         <div className="card favorites-card position-relative h-100">
             {/* Pet image */}
@@ -65,13 +68,76 @@ function PetCard({ pet, onRemoveFavorite, favoriteId, onContactClick }) {
                     )}
                 </div>
 
+                {/* Dynamic Bootstrap modal trigger */}
                 <button 
                     type="button" 
-                    className="btn favorites-btn w-100 mb-2" 
-                    onClick={() => onContactClick(pet)}
+                    className="btn btn-primary w-100 mb-2" 
+                    data-bs-toggle="modal" 
+                    data-bs-target={`#${modalId}`}
                 >
-                    Contact Shelter
+                    Contact Shelter for {pet.name}
                 </button>
+
+                {/* Dynamic Bootstrap modal with unique ID */}
+                <div className="modal fade" id={modalId} tabIndex="-1" role="dialog" aria-labelledby={`${modalId}Label`} aria-hidden="true">
+                    <div className="modal-dialog" role="document">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title" id={`${modalId}Label`}>
+                                    Contact Shelter for {pet.name}
+                                </h5>
+                                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div className="modal-body">
+                                <div className="d-flex align-items-center mb-3">
+                                    <img 
+                                        src={pet.image_url} 
+                                        alt={pet.name}
+                                        style={{ width: '80px', height: '80px', objectFit: 'cover' }}
+                                        className="rounded me-3"
+                                    />
+                                    <div>
+                                        <h6 className="mb-1">{pet.name}</h6>
+                                    </div>
+                                </div>
+                                
+                                <p><strong>Email:</strong> {pet.email || "Email not available"}</p>
+                                <p><strong>Phone:</strong> {pet.phone || "Phone not available"}</p>
+                                <p><strong>Location:</strong> {pet.location || "Not specified"}</p>
+                                <p><strong>City:</strong> {pet.city || "Not specified"}</p>
+                                <p><strong>State:</strong> {pet.state || "Not specified"}</p>
+                                
+                                {pet.description && (
+                                    <div>
+                                        <strong>About {pet.name}:</strong>
+                                        <p className="mt-1">{pet.description}</p>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">
+                                    Close
+                                </button>
+                                {pet.email && (
+                                    <a 
+                                        href={`mailto:${pet.email}?subject=Interested in ${pet.name} (ID: ${pet.id})`}
+                                        className="btn btn-primary"
+                                    >
+                                        Send Email
+                                    </a>
+                                )}
+                                {pet.phone && (
+                                    <a 
+                                        href={`tel:${pet.phone}`}
+                                        className="btn btn-success"
+                                    >
+                                        Call Shelter
+                                    </a>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <button
                     className="btn btn-outline-danger w-100"
@@ -82,7 +148,6 @@ function PetCard({ pet, onRemoveFavorite, favoriteId, onContactClick }) {
             </div>
         </div>
     );
-
 }
 
 const Favorites = () => {
@@ -91,24 +156,31 @@ const Favorites = () => {
     const [error, setError] = useState(null);
     const { store, dispatch } = useGlobalReducer();
 
-    const [showModal, setShowModal] = useState(false);
-    const [selectedPet, setSelectedPet] = useState(null);
-
     // Fetch favorites 
     const fetchFavorites = async () => {
         try {
             setLoading(true);
             setError(null);
 
-            const response = await fetch(`${API_BASE_URL}api/favorite`);
+            const response = await fetch(`${API_BASE_URL}api/favorite`,
+                {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${store.token}`
+                },
+        });
+
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const data = await response.json();
+            console.log('API Response:', data); // Debug log
 
             if (data.success) {
+                console.log('Favorites data:', data.data); // Debug log
                 setFavorites(data.data);
             } else {
                 throw new Error(data.error || 'Failed to fetch favorites');
@@ -128,6 +200,7 @@ const Favorites = () => {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${store.token}`
                 },
             });
 
@@ -257,47 +330,12 @@ const Favorites = () => {
                             pet={favorite.pet}
                             onRemoveFavorite={removeFavorite}
                             favoriteId={favorite.id}
-                            onContactClick={(pet) => {
-                                setSelectedPet(pet);
-                                setShowModal(true);
-                            }}
                         />
                     </div>
                 ))}
             </div>
-
-            {showModal && selectedPet && (
-                <div className="modal show d-block" tabIndex="-1" role="dialog">
-                    <div className="modal-dialog" role="document">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title">Contact Shelter</h5>
-                                <button
-                                    type="button"
-                                    className="btn-close"
-                                    aria-label="Close"
-                                    onClick={() => setShowModal(false)}
-                                ></button>
-                            </div>
-                            <div className="modal-body">
-                                <p><strong>Shelter Name:</strong> {selectedPet.organization_id || "Unavailable"}</p>
-                                <p><strong>Email:</strong> {selectedPet.email || "Email not available"}</p>
-                                <p><strong>Phone:</strong> {selectedPet.phone || "Phone not available"}</p>
-                            </div>
-                            <div className="modal-footer">
-                                <button
-                                    className="btn btn-secondary"
-                                    onClick={() => setShowModal(false)}
-                                >
-                                    Close
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };
 
-export default Favorites
+export default Favorites;
