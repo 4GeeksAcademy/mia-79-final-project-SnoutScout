@@ -18,7 +18,11 @@ import Login from "./pages/Login";
 import Matches from "./pages/Matches";
 import Favorites from "./pages/Favorites"
 import Pets from "./pages/Pets";
+
+import SocialFeed from "./pages/SocialFeed";
+
 import PrivateRoute from "./components/PrivateRoute";
+
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -46,7 +50,12 @@ export const router = createBrowserRouter(
       <Route path="/login" element={<Login />} />
       <Route path="/favorites" element={<PrivateRoute><Favorites /> </PrivateRoute>} />
       <Route path="/pets" element={<Pets />} />
+
+      <Route path="/socialfeed" element={<SocialFeed />} />
+
+
       <Route path="/matches" element={<Matches />} />
+
 
 
 

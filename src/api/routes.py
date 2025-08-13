@@ -43,6 +43,12 @@ def score_pet_against_questionnaire(pet, questionnaire):
     score = 0
 
     if questionnaire.size and questionnaire.size.lower() in (pet["size"] or "").lower():
+
+        score += 1
+    if questionnaire.activity and questionnaire.activity.lower() in (pet["activity"] or "").lower():
+        score += 1
+    if questionnaire.location and questionnaire.location.lower() in (pet["location"] or "").lower():
+
         score += 1
     if questionnaire.age and questionnaire.age.lower() in (pet["age"] or "").lower():
         score += 1
@@ -189,7 +195,7 @@ def get_pets():
     print("something", body)
     bearer_token = f"Bearer {body['access_token']}"
     animals_response = requests.get(
-        url="https://api.petfinder.com/v2/animals?type=Dog",
+        url="https://api.petfinder.com/v2/animals?type=Dog&limit=100",
         headers=dict({
             "Authorization": bearer_token,
             "Content-Type": "application/json"
@@ -327,28 +333,111 @@ def create_pet():
     return jsonify({"success": True, "data": pet.to_dict()}), 201
 
 
-@api.route('/pets/<int:pet_id>', methods=['GET'])
-def get_pet(pet_id):
-    """Get a single pet by ID"""
-    pet = Pet.query.get(pet_id)
-    if not pet:
-        return jsonify({"success": False, "error": "Pet not found"}), 404
-    return jsonify({"success": True, "data": pet.to_dict()})
+@api.route('/pets/petfinder', methods=['GET'])
+def get_pets_from_petfinder():
+    """Get pets from Petfinder API"""
+    try:
+        # Get query parameters
+        limit = request.args.get('limit', 20, type=int)
+        location = request.args.get('location')
+        animal_type = request.args.get('type')
+        breed = request.args.get('breed')
+        size = request.args.get('size')
+        gender = request.args.get('gender')
+        age = request.args.get('age')
+
+        # Initialize Petfinder service
+        petfinder = PetfinderService()
+
+        # Get animals from Petfinder
+        response = petfinder.get_animals(
+            limit=limit,
+            location=location,
+            animal_type=animal_type,
+            breed=breed,
+            size=size,
+            gender=gender,
+            age=age
+        )
+
+        # Transform Petfinder animals to our format
+        animals = response.get('animals', [])
+        transformed_animals = []
+
+        for animal in animals:
+            transformed_animal = petfinder.transform_petfinder_animal(animal)
+            transformed_animals.append(transformed_animal)
+
+        return jsonify({
+            "success": True,
+            "data": transformed_animals,
+            "pagination": response.get('pagination', {}),
+            "source": "petfinder"
+        })
+
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
-@api.route('/favorites', methods=['GET'])
-def get_favorites():
-    user_id = request.args.get('user_id', type=int)
-    if not user_id:
-        return jsonify({"success": False, "error": "user_id is required"}), 400
-    favorites = Favorite.query.filter_by(user_id=user_id).all()
-    result = [fav.to_dict() for fav in favorites]
-    return jsonify({"success": True, "data": result})
+@api.route('/pets/sync-petfinder', methods=['POST'])
+def sync_pets_from_petfinder():
+    """Sync pets from Petfinder API to local database"""
+    try:
+        # Get query parameters
+        limit = request.args.get('limit', 20, type=int)
+        location = request.args.get('location')
+        animal_type = request.args.get('type')
+
+        # Initialize Petfinder service
+        petfinder = PetfinderService()
+
+        # Get animals from Petfinder
+        response = petfinder.get_animals(
+            limit=limit,
+            location=location,
+            animal_type=animal_type
+        )
+
+        animals = response.get('animals', [])
+        synced_count = 0
+
+        for animal in animals:
+            # Check if pet already exists by petfinder_id
+            existing_pet = Pet.query.filter_by(
+                petfinder_id=str(animal.get('id'))).first()
+
+            if not existing_pet:
+                # Transform and create new pet
+                pet_data = petfinder.transform_petfinder_animal(animal)
+
+                # Convert contact dict to JSON string
+                if pet_data.get('contact'):
+                    pet_data['contact'] = json.dumps(pet_data['contact'])
+
+                pet = Pet(**pet_data)
+                db.session.add(pet)
+                synced_count += 1
+
+        db.session.commit()
+
+        return jsonify({
+            "success": True,
+            "message": f"Synced {synced_count} new pets from Petfinder",
+            "total_animals": len(animals),
+            "synced_count": synced_count
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
 @api.route('/favorite', methods=['GET'])
-def get_test():
-    user_id = 1
+@jwt_required()
+def get_favorites():
+    user_id = int(get_jwt_identity())  # Current logged-in user's ID
+    favorites = Favorite.query.filter_by(user_id=user_id).all()
+    
     if not user_id:
         return jsonify({"success": False, "error": "user_id is required"}), 400
 
@@ -370,36 +459,224 @@ def add_favorite():
     pet_id = data.get('pet_id')
     if not user_id or not pet_id:
         return jsonify({"success": False, "error": "user_id and pet_id required"}), 400
-
-    # Check if favorite already exists
+    # First, check if we have this pet in our database by petfinder_id
+    existing_pet = Pet.query.filter_by(petfinder_id=str(pet_id)).first()
+    if existing_pet:
+        # Pet exists, use the existing pet's database ID
+        db_pet_id = existing_pet.id
+    else:
+        # Pet doesn't exist, create it
+        try:
+            new_pet = Pet(
+                petfinder_id=str(pet_id),  # Store as string to match your model
+                name=pet["name"],
+                age=pet.get('age', ''),
+                location=pet.get('contact', {}).get('address', {}).get('address1', ''),
+                image_url=pet.get('photos', [{}])[0].get('full') if pet.get('photos') else None,
+                gender=pet.get('gender', ''),
+                breed=pet.get('breeds', {}).get('primary', ''),
+                activity=str(pet.get('tags', [])),
+                status=pet.get('status', ''),
+                description=pet.get('description', ''),
+                organization_id=pet.get('organization_id', ''),
+                url=pet.get('url', ''),
+                published_at=pet.get('published_at', ''),
+                email=str(pet.get('contact', {}).get('email', {})),
+                phone=str(pet.get('contact', {}).get('phone', {})),  
+                city=pet.get('contact', {}).get('address', {}).get('city', ''),
+                state=pet.get('contact', {}).get('address', {}).get('state', ''),
+                
+            )
+            db.session.add(new_pet)
+            db.session.commit()
+            db.session.refresh(new_pet)
+            db_pet_id = new_pet.id
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"success": False, "error": f"Failed to create pet: {str(e)}"}), 500
+    # Check if favorite already exists using the database pet ID
     existing_favorite = Favorite.query.filter_by(
-        user_id=user_id, pet_id=pet_id).first()
+        user_id=user_id, pet_id=db_pet_id).first()
     if existing_favorite:
         return jsonify({"success": False, "error": "Pet is already in favorites"}), 400
-    pet_exists = Pet.query.get(pet_id)
-    if not pet_exists:
-        new_pet = Pet(
-            petfinder_id=pet_id,
-            name=pet["name"],
-            age=pet['age'],
-            location=pet['contact']['address']['address1'],
-            image_url=pet['photos'][0]['full'] if pet['photos'] else None,
-            gender=pet['gender'],
-            breed=pet['breeds']['primary'],
-            activity=str(pet['tags']))
-        db.session.add(new_pet)
+    # Create the favorite
+    try:
+        favorite = Favorite(user_id=user_id, pet_id=db_pet_id)
+        db.session.add(favorite)
         db.session.commit()
-        db.session.refresh(new_pet)
+        return jsonify({"success": True, "data": favorite.to_dict()}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "error": f"Failed to create favorite: {str(e)}"}), 500
 
-    favorite = Favorite(user_id=user_id, pet_id=new_pet.id)
-    db.session.add(favorite)
-    db.session.commit()
-    return jsonify({"success": True, "data": favorite.to_dict()}), 201
+
+# @api.route('/favorites', methods=['POST'])
+# @jwt_required()
+# def add_favorite():
+    try:
+        print("=== FAVORITE ROUTE DEBUG ===")
+        
+        # Get data
+        data = request.get_json()
+        print(f"Request data: {data}")
+        
+        pet = data.get('pet')
+        user_id = int(get_jwt_identity())
+        pet_id = data.get('pet_id')  # This is the Petfinder ID
+        
+        print(f"User ID: {user_id}")
+        print(f"Pet ID (from Petfinder): {pet_id}")
+        print(f"Pet data keys: {pet.keys() if pet else 'No pet data'}")
+        
+        # Validate required data
+        if not user_id or not pet_id:
+            print("ERROR: Missing user_id or pet_id")
+            return jsonify({"success": False, "error": "user_id and pet_id required"}), 400
+        
+        if not pet:
+            print("ERROR: Missing pet data")
+            return jsonify({"success": False, "error": "pet data required"}), 400
+
+        # Check if pet already exists in database
+        existing_pet = Pet.query.filter_by(petfinder_id=pet_id).first()
+        print(f"Existing pet found: {existing_pet is not None}")
+        
+        if existing_pet:
+            print(f"Using existing pet with DB ID: {existing_pet.id}")
+            pet_db_id = existing_pet.id
+        else:
+            print("Creating new pet...")
+            
+            # Extract location safely
+            location = "Unknown"
+            if pet.get('contact') and pet['contact'].get('address'):
+                address = pet['contact']['address']
+                if address.get('city') and address.get('state'):
+                    location = f"{address['city']}, {address['state']}"
+                elif address.get('address1'):
+                    location = address['address1']
+            
+            # Extract image URL safely
+            image_url = None
+            if pet.get('photos') and len(pet['photos']) > 0:
+                image_url = pet['photos'][0].get('full')
+            
+            # Extract breed safely
+            breed = "Mixed"
+            if pet.get('breeds') and pet['breeds'].get('primary'):
+                breed = pet['breeds']['primary']
+            
+            print(f"Creating pet with: name={pet.get('name')}, location={location}, breed={breed}")
+            
+            new_pet = Pet(
+                petfinder_id=pet_id,
+                name=pet.get("name", "Unknown"),
+                age=pet.get('age', 'Unknown'),
+                location=location,
+                image_url=image_url,
+                gender=pet.get('gender', 'Unknown'),
+                breed=breed,
+                activity=str(pet.get('tags', [])),
+                size=pet.get("size", "Unknown")
+            )
+            
+            db.session.add(new_pet)
+            db.session.flush()  # Get ID without committing
+            pet_db_id = new_pet.id
+            print(f"New pet created with DB ID: {pet_db_id}")
+
+        # Check if favorite already exists
+        existing_favorite = Favorite.query.filter_by(
+            user_id=user_id, pet_id=pet_db_id).first()
+        
+        if existing_favorite:
+            print("ERROR: Favorite already exists")
+            return jsonify({"success": False, "error": "Pet is already in favorites"}), 400
+
+        # Create favorite
+        print(f"Creating favorite: user_id={user_id}, pet_id={pet_db_id}")
+        favorite = Favorite(user_id=user_id, pet_id=pet_db_id)
+        db.session.add(favorite)
+        db.session.commit()
+        
+        print("SUCCESS: Favorite saved to database!")
+        print(f"Favorite ID: {favorite.id}")
+        
+        return jsonify({"success": True, "data": favorite.to_dict()}), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"ERROR in add_favorite: {str(e)}")
+        print(f"Error type: {type(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "error": f"Internal server error: {str(e)}"}), 500
+
+# @api.route('/pets/<int:pet_id>', methods=['GET'])
+# def get_pet(pet_id):
+#     """Get a single pet by ID"""
+#     pet = Pet.query.get(pet_id)
+#     if not pet:
+#         return jsonify({"success": False, "error": "Pet not found"}), 404
+#     return jsonify({"success": True, "data": pet.to_dict()})
+
+
+# @api.route('/pets/<int:pet_id>', methods=['DELETE'])
+# def delete_pet(pet_id):
+#     """Delete a pet by ID"""
+#     pet = Pet.query.get(pet_id)
+#     if not pet:
+#         return jsonify({"success": False, "error": "Pet not found"}), 404
+
+#     # Delete associated favorites first (to maintain referential integrity)
+#     favorites = Favorite.query.filter_by(pet_id=pet_id).all()
+#     for favorite in favorites:
+#         db.session.delete(favorite)
+
+#     # Delete the pet
+#     db.session.delete(pet)
+#     db.session.commit()
+
+#     return jsonify({"success": True, "message": "Pet deleted successfully"})
+
+
+# @api.route('/favorites', methods=['GET'])
+# def get_favorites():
+#     user_id = request.args.get('user_id', type=int)
+#     if not user_id:
+#         return jsonify({"success": False, "error": "user_id is required"}), 400
+#     favorites = Favorite.query.filter_by(user_id=user_id).all()
+#     result = [fav.to_dict() for fav in favorites]
+#     return jsonify({"success": True, "data": result})
+
+
+# @api.route('/favorites', methods=['POST'])
+# def add_favorite():
+#     data = request.get_json()
+#     user_id = data.get('user_id')
+#     pet_id = data.get('pet_id')
+#     if not user_id or not pet_id:
+#         return jsonify({"success": False, "error": "user_id and pet_id required"}), 400
+
+#     # Check if favorite already exists
+#     existing_favorite = Favorite.query.filter_by(
+#         user_id=user_id, pet_id=pet_id).first()
+#     if existing_favorite:
+#         return jsonify({"success": False, "error": "Pet is already in favorites"}), 400
+
+#     favorite = Favorite(user_id=user_id, pet_id=pet_id)
+#     db.session.add(favorite)
+#     db.session.commit()
+#     return jsonify({"success": True, "data": favorite.to_dict()}), 201
 
 
 @api.route('/favorites/<int:favorite_id>', methods=['DELETE'])
+@jwt_required()
 def delete_favorite(favorite_id):
-    favorite = Favorite.query.get(favorite_id)
+    user_id = int(get_jwt_identity())
+    if not user_id:
+        return jsonify({"success": False, "error": "user_id required"}), 400
+    favorite = Favorite.query.filter_by(id=favorite_id, user_id=user_id).first()
     if not favorite:
         return jsonify({"success": False, "error": "Favorite not found"}), 404
     db.session.delete(favorite)

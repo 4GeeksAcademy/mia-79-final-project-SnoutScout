@@ -15,7 +15,9 @@ const Home = () => {
     navigate("/question1", { state: { zipCode } });
   };
   useEffect(() => {
-    if (!!store.token) return navigate("/");
+
+   if (!!store.token) return navigate("/find-your-pup");
+
   }, [store.token]);
 
   return (

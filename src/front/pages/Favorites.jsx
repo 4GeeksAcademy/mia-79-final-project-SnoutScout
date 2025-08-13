@@ -4,13 +4,14 @@ import useGlobalReducer from '../hooks/useGlobalReducer';
 
 // API base URL
 const API_BASE_URL = `${import.meta.env.VITE_BACKEND_URL}`;
+
 /**
  * PetCard component 
  * @param {Object} pet - The pet object 
  * @param {Function} onRemoveFavorite - Callback function to remove pet from favorites
  * @param {number} favoriteId - ID of the favorite record
  */
-function PetCard({ pet, onRemoveFavorite, favoriteId }) {
+function PetCard({ pet, onRemoveFavorite, favoriteId, onContactClick }) {
     const handleRemoveFavorite = async () => {
         try {
             await onRemoveFavorite(favoriteId);
@@ -18,6 +19,9 @@ function PetCard({ pet, onRemoveFavorite, favoriteId }) {
             console.error('Error removing favorite:', error);
         }
     };
+
+    // Create unique modal ID using pet.id
+    const modalId = `petModal-${pet.id}`;
 
     return (
         <div className="card favorites-card position-relative h-100">
@@ -32,7 +36,6 @@ function PetCard({ pet, onRemoveFavorite, favoriteId }) {
                 ♥
             </span>
             <div className="card-body">
-
                 <h5 className="favorites-card-title card-title mb-1">{pet.name}</h5>
 
                 <div className="text-muted" style={{ fontSize: '0.95rem' }}>{pet.age}</div>
@@ -41,7 +44,6 @@ function PetCard({ pet, onRemoveFavorite, favoriteId }) {
                     <span className="me-1" role="img" aria-label="Location">📍</span>
                     {pet.location}
                 </div>
-
 
                 <div className="mb-3">
                     {pet.breed && (
@@ -66,10 +68,76 @@ function PetCard({ pet, onRemoveFavorite, favoriteId }) {
                     )}
                 </div>
 
-
-                <button className="btn favorites-btn w-100 mb-2">
-                    Apply to Adopt
+                {/* Dynamic Bootstrap modal trigger */}
+                <button 
+                    type="button" 
+                    className="btn btn-primary w-100 mb-2" 
+                    data-bs-toggle="modal" 
+                    data-bs-target={`#${modalId}`}
+                >
+                    Contact Shelter for {pet.name}
                 </button>
+
+                {/* Dynamic Bootstrap modal with unique ID */}
+                <div className="modal fade" id={modalId} tabIndex="-1" role="dialog" aria-labelledby={`${modalId}Label`} aria-hidden="true">
+                    <div className="modal-dialog" role="document">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title" id={`${modalId}Label`}>
+                                    Contact Shelter for {pet.name}
+                                </h5>
+                                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div className="modal-body">
+                                <div className="d-flex align-items-center mb-3">
+                                    <img 
+                                        src={pet.image_url} 
+                                        alt={pet.name}
+                                        style={{ width: '80px', height: '80px', objectFit: 'cover' }}
+                                        className="rounded me-3"
+                                    />
+                                    <div>
+                                        <h6 className="mb-1">{pet.name}</h6>
+                                    </div>
+                                </div>
+                                
+                                <p><strong>Email:</strong> {pet.email || "Email not available"}</p>
+                                <p><strong>Phone:</strong> {pet.phone || "Phone not available"}</p>
+                                <p><strong>Location:</strong> {pet.location || "Not specified"}</p>
+                                <p><strong>City:</strong> {pet.city || "Not specified"}</p>
+                                <p><strong>State:</strong> {pet.state || "Not specified"}</p>
+                                
+                                {pet.description && (
+                                    <div>
+                                        <strong>About {pet.name}:</strong>
+                                        <p className="mt-1">{pet.description}</p>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">
+                                    Close
+                                </button>
+                                {pet.email && (
+                                    <a 
+                                        href={`mailto:${pet.email}?subject=Interested in ${pet.name} (ID: ${pet.id})`}
+                                        className="btn btn-primary"
+                                    >
+                                        Send Email
+                                    </a>
+                                )}
+                                {pet.phone && (
+                                    <a 
+                                        href={`tel:${pet.phone}`}
+                                        className="btn btn-success"
+                                    >
+                                        Call Shelter
+                                    </a>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <button
                     className="btn btn-outline-danger w-100"
@@ -82,28 +150,37 @@ function PetCard({ pet, onRemoveFavorite, favoriteId }) {
     );
 }
 
-
-function Favorites() {
+const Favorites = () => {
     const [favorites, setFavorites] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const { store, dispatch } = useGlobalReducer();
+
     // Fetch favorites 
     const fetchFavorites = async () => {
         try {
             setLoading(true);
             setError(null);
 
+            const response = await fetch(`${API_BASE_URL}api/favorite`,
+                {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${store.token}`
+                },
+        });
 
-            const response = await fetch(`${API_BASE_URL}api/favorite`);
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const data = await response.json();
+            console.log('API Response:', data); // Debug log
 
             if (data.success) {
+                console.log('Favorites data:', data.data); // Debug log
                 setFavorites(data.data);
             } else {
                 throw new Error(data.error || 'Failed to fetch favorites');
@@ -123,6 +200,7 @@ function Favorites() {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${store.token}`
                 },
             });
 
@@ -258,6 +336,6 @@ function Favorites() {
             </div>
         </div>
     );
-}
+};
 
-export default Favorites; 
+export default Favorites;
