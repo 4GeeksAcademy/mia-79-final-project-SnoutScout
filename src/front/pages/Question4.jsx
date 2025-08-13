@@ -6,11 +6,11 @@ const Question4 = () => {
   const [selected, setSelected] = useState("");
   const navigate = useNavigate();
   const { store, dispatch } = useGlobalReducer();
-  const options = ["No", "Dog(s)", "Cat(s)", "Both", "Other"];
+  const options = ["Kids", "Other Dogs", "Cats"];
 
   return (
     <div style={styles.page}>
-      <h2 style={styles.title}>Do you have any other pets?</h2>
+      <h2 style={styles.title}>Good With?</h2>
 
       <div style={styles.options}>
         {options.map((option) => (
@@ -33,7 +33,7 @@ const Question4 = () => {
           dispatch({
             type: "update_answer",
             payload: {
-              step: "other_pets",
+              step: "good_with",
               answer: selected
             }
           });
@@ -43,7 +43,7 @@ const Question4 = () => {
       >
         Next
       </button>
-      <p style={styles.stepText}>Step 4 of 8</p>
+      <p style={styles.stepText}>Step 4 of 6</p>
     </div>
   );
 };

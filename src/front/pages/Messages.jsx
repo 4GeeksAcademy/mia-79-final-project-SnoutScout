@@ -36,7 +36,7 @@ export const Messages = () => {
   };
 
   useEffect(() => {
-    if (!store.user || !store.token) return navigate("/login");
+    // if (!store.user || !store.token) return navigate("/login");
     const loadData = async () => {
       try {
         // Fetch contacts for current user 

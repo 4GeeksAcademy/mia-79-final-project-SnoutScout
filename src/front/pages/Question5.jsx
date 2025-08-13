@@ -8,11 +8,11 @@ const Question5 = () => {
   const { store, dispatch } = useGlobalReducer();
 
 
-  const options = ["Yes", "No"];
+  const options = ["House Trained", "Special Needs"];
 
   return (
     <div style={styles.page}>
-      <h2 style={styles.title}>Do you need a hypoallergenic dog?</h2>
+      <h2 style={styles.title}>Dog Behavior?</h2>
 
       <div style={styles.options}>
         {options.map((option) => (
@@ -35,7 +35,7 @@ const Question5 = () => {
           dispatch({
             type: "update_answer",
             payload: {
-              step: "hypoallergenic",
+              step: "dog_behavior",
               answer: selected
             }
           });
@@ -45,7 +45,7 @@ const Question5 = () => {
       >
         Next
       </button>
-      <p style={styles.stepText}>Step 5 of 8</p>
+      <p style={styles.stepText}>Step 5 of 6</p>
     </div>
   );
 };

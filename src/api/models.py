@@ -228,29 +228,31 @@ class Message(db.Model):
 class Questionnaire(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     size = db.Column(db.String(50))
-    activity = db.Column(db.String(50))
-    travel = db.Column(db.String(50))
-    other_pets = db.Column(db.String(100))
-    hypoallergenic = db.Column(db.String(10))
-    gender_preference = db.Column(db.String(50))
-    yard = db.Column(db.String(10))
-    owned_pets_before = db.Column(db.String(10))
+    age = db.Column(db.String(50))
+    gender = db.Column(db.String(50))
+    good_with = db.Column(db.String(150))
+    dog_bahavior = db.Column(db.String(150))
+    coat_length = db.Column(db.String(50))
+    
+
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+   
+
 
     def to_dict(self):
         return {
             "id": self.id,
             "size": self.size,
-            "activity": self.activity,
-            "travel": self.travel,
-            "other_pets": self.other_pets,
-            "hypoallergenic": self.hypoallergenic,
-            "gender_preference": self.gender_preference,
-            "yard": self.yard,
-            "owned_pets_before": self.owned_pets_before,
+            "age": self.age,
+            "gender": self.gender,
+            "good_with": self.good_with,
+            "dog_behavior": self.dog_bahavior,
+            "coat_length": self.coat_length,
             "user_id": self.user_id
         }
+
 
 
 # Post Like model
@@ -258,6 +260,7 @@ class Questionnaire(db.Model):
 
 class PostLike(db.Model):
     __tablename__ = 'post_likes'
+
     id = db.Column(db.Integer, primary_key=True)
     petfinder_id = db.Column(db.Integer, nullable=False)
     name = db.Column(db.String(100), nullable=False)
@@ -267,6 +270,7 @@ class PostLike(db.Model):
     gender = db.Column(db.String(20))
     weight = db.Column(db.String(50), nullable=True)
     breed = db.Column(db.String(100))
+
     activity = db.Column(db.String(512))
     size = db.Column(db.String(50))
     email = db.Column(db.String(50))
@@ -274,6 +278,7 @@ class PostLike(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
    
+
 
     # Relationships
     user = db.relationship('User', back_populates='post_likes')
@@ -295,6 +300,7 @@ class PostLike(db.Model):
             "image_url": self.image_url,
             "gender": self.gender,
             "weight": self.weight,
+
             "breed": self.breed,
             "activity": self.activity,
             "email": self.email,
@@ -333,4 +339,5 @@ class PostComment(db.Model):
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
             "user": self.user.to_dict() if self.user else None
+
         }

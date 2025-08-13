@@ -4,7 +4,7 @@
 import { createBrowserRouter, createRoutesFromElements, Route } from "react-router-dom";
 import { Layout } from "./pages/Layout";
 import Home from "./pages/Home";
-import { Messages }from "./pages/Messages";
+import { Messages } from "./pages/Messages";
 import FindYourPup from "./pages/FindYourPup"
 import Question1 from "./pages/Question1";
 import Question2 from "./pages/Question2";
@@ -12,19 +12,17 @@ import Question3 from "./pages/Question3";
 import Question4 from "./pages/Question4";
 import Question5 from "./pages/Question5";
 import Question6 from "./pages/Question6";
-import Question7 from "./pages/Question7";
-import Question8 from "./pages/Question8";
-
-import Registerform from "./pages/RegisterForm";
+import RegisterForm from "./pages/RegisterForm";
 import ShelterLookup from "./pages/ShelterLookup";
 import Login from "./pages/Login";
-
-// import { Single } from "./pages/Single";
-// import { Demo } from "./pages/Demo";
-
+import Matches from "./pages/Matches";
 import Favorites from "./pages/Favorites"
 import Pets from "./pages/Pets";
+
 import SocialFeed from "./pages/SocialFeed";
+
+import PrivateRoute from "./components/PrivateRoute";
+
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -38,23 +36,25 @@ export const router = createBrowserRouter(
     <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>} >
 
       {/* Nested Routes: Defines sub-routes within the BaseHome component. */}
-      <Route index element={<Home />} />
-      <Route path="/messages" element={<Messages />} />
+      <Route path="/" element={<Home />} />
+      <Route path="/messages" element={<PrivateRoute> <Messages /> </PrivateRoute>} />
       <Route path="/question1" element={<Question1 />} />
       <Route path="/question2" element={<Question2 />} />
       <Route path="/question3" element={<Question3 />} />
       <Route path="/question4" element={<Question4 />} />
       <Route path="/question5" element={<Question5 />} />
       <Route path="/question6" element={<Question6 />} />
-      <Route path="/question7" element={<Question7 />} />
-      <Route path="/question8" element={<Question8 />} />
-      <Route path="/register" element={<Registerform />} />
+      <Route path="/register" element={<RegisterForm />} />
       <Route path="/find-your-pup" element={<FindYourPup />} />
       <Route path="/Shelters" element={<ShelterLookup />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/favorites" element={<Favorites />} />
+      <Route path="/favorites" element={<PrivateRoute><Favorites /> </PrivateRoute>} />
       <Route path="/pets" element={<Pets />} />
+
       <Route path="/socialfeed" element={<SocialFeed />} />
+
+
+      <Route path="/matches" element={<Matches />} />
 
 
 

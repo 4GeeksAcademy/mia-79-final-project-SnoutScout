@@ -43,7 +43,7 @@ export default function storeReducer(store, action = {}) {
         ...store,
         messages: {
           ...store.messages,
-          [contactId]: [...action(store.messages[contactId] || []), message],
+          [contactId]: [...(store.messages[contactId] || []), message],
         },
       };
     case "set_active_contact":

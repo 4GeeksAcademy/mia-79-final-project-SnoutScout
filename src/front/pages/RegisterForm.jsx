@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const RegisterForm = () => {
-  const { store, dispatch } = useGlobalReducer();
+  const { store, dispatch } = useGlobalReducer(); // ✅ include dispatch here
   const [formData, setFormData] = useState({
     first: "",
     last: "",
@@ -11,6 +11,7 @@ const RegisterForm = () => {
     password: "",
   });
   const navigate = useNavigate();
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -19,6 +20,7 @@ const RegisterForm = () => {
     e.preventDefault();
 
     try {
+      // 1. Register user
       const response = await fetch(`${store.BASE_API_URL}api/register`, {
         method: "POST",
         headers: {
@@ -33,27 +35,44 @@ const RegisterForm = () => {
       });
 
       const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Registration failed");
 
-      if (!response.ok) {
-        throw new Error(data.error || "Registration failed");
+      if (!data.user || !data.token) {
+        throw new Error("Invalid registration response: missing user or token");
       }
+
+      // 2. Save user and token to global store/localStorage
+      dispatch({
+        type: "set_user",
+        payload: { user: data.user, token: data.token },
+      });
+
+      // 3. Send questionnaire answers
       const payload = store.questionnaireAnswers;
       const questionnaireResponse = await fetch(
-        `${store.BASE_API_URL}api/questionnaire`, {
-        method: "POST",
-        body: JSON.stringify(payload),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${data.token}`
+        `${store.BASE_API_URL}api/questionnaire`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${data.token}`,
+          },
+          body: JSON.stringify(payload),
         }
-      }
       );
+
+      if (!questionnaireResponse.ok) {
+        const errorData = await questionnaireResponse.json();
+        throw new Error(errorData.error || "Failed to submit questionnaire");
+      }
+
+      // 4. Navigate to login page
       navigate("/login");
+
     } catch (error) {
-      console.log("Registration error:", error.message);
+      console.error("Registration error:", error.message);
     }
   };
-
 
   return (
     <div style={styles.container}>
@@ -67,7 +86,6 @@ const RegisterForm = () => {
           onChange={handleChange}
           style={styles.input}
         />
-
         <input
           name="last"
           placeholder="Last Name"
@@ -75,7 +93,6 @@ const RegisterForm = () => {
           onChange={handleChange}
           style={styles.input}
         />
-
         <input
           name="email"
           placeholder="Email"
@@ -84,7 +101,6 @@ const RegisterForm = () => {
           onChange={handleChange}
           style={styles.input}
         />
-
         <input
           name="password"
           placeholder="Password"
@@ -95,14 +111,20 @@ const RegisterForm = () => {
         />
 
         <button type="submit" style={styles.button}>
-          Join Now
+          Join
         </button>
+
+        <p style={styles.loginText}>
+          Already have an account?{" "}
+          <Link to="/login" style={styles.loginLink}>
+            Log in
+          </Link>
+        </p>
       </form>
     </div>
   );
 };
 
-// Adjust the border color to match your navbar orange
 const styles = {
   container: {
     minHeight: "100vh",
@@ -146,6 +168,16 @@ const styles = {
     borderRadius: "6px",
     cursor: "pointer",
     textTransform: "uppercase",
+  },
+  loginText: {
+    textAlign: "center",
+    fontSize: "14px",
+    color: "#555",
+  },
+  loginLink: {
+    color: "#FF6600",
+    fontWeight: "bold",
+    textDecoration: "none",
   },
 };
 
