@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 9b3f2d035706
+Revision ID: c3b9936020d9
 Revises: 
-Create Date: 2025-08-12 21:32:57.375930
+Create Date: 2025-08-13 18:55:39.796392
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '9b3f2d035706'
+revision = 'c3b9936020d9'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -84,13 +84,11 @@ def upgrade():
     op.create_table('questionnaire',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('size', sa.String(length=50), nullable=True),
-    sa.Column('activity', sa.String(length=50), nullable=True),
-    sa.Column('travel', sa.String(length=50), nullable=True),
-    sa.Column('other_pets', sa.String(length=100), nullable=True),
-    sa.Column('hypoallergenic', sa.String(length=10), nullable=True),
-    sa.Column('gender_preference', sa.String(length=50), nullable=True),
-    sa.Column('yard', sa.String(length=10), nullable=True),
-    sa.Column('owned_pets_before', sa.String(length=10), nullable=True),
+    sa.Column('age', sa.String(length=50), nullable=True),
+    sa.Column('gender', sa.String(length=50), nullable=True),
+    sa.Column('good_with', sa.String(length=150), nullable=True),
+    sa.Column('dog_behavior', sa.String(length=150), nullable=True),
+    sa.Column('coat_length', sa.String(length=50), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')

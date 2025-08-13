@@ -16,7 +16,7 @@ const Home = () => {
   };
   useEffect(() => {
 
-   if (!!store.token) return navigate("/find-your-pup");
+   if (!!store.token) return navigate("/");
 
   }, [store.token]);
 

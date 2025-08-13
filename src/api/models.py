@@ -231,7 +231,7 @@ class Questionnaire(db.Model):
     age = db.Column(db.String(50))
     gender = db.Column(db.String(50))
     good_with = db.Column(db.String(150))
-    dog_bahavior = db.Column(db.String(150))
+    dog_behavior = db.Column(db.String(150))
     coat_length = db.Column(db.String(50))
     
 
@@ -248,7 +248,7 @@ class Questionnaire(db.Model):
             "age": self.age,
             "gender": self.gender,
             "good_with": self.good_with,
-            "dog_behavior": self.dog_bahavior,
+            "dog_behavior": self.dog_behavior,
             "coat_length": self.coat_length,
             "user_id": self.user_id
         }
