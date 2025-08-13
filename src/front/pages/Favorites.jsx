@@ -12,11 +12,58 @@ const API_BASE_URL = `${import.meta.env.VITE_BACKEND_URL}`;
  * @param {number} favoriteId - ID of the favorite record
  */
 function PetCard({ pet, onRemoveFavorite, favoriteId, onContactClick }) {
+    const [emailCopySuccess, setEmailCopySuccess] = useState(false);
+    const [phoneCopySuccess, setPhoneCopySuccess] = useState(false);
+
     const handleRemoveFavorite = async () => {
         try {
             await onRemoveFavorite(favoriteId);
         } catch (error) {
             console.error('Error removing favorite:', error);
+        }
+    };
+
+    const handleCopyEmail = async () => {
+        if (pet.email) {
+            try {
+                await navigator.clipboard.writeText(pet.email);
+                setEmailCopySuccess(true);
+                // Reset success message after 2 seconds
+                setTimeout(() => setEmailCopySuccess(false), 2000);
+            } catch (err) {
+                console.error('Failed to copy email:', err);
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = pet.email;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                setEmailCopySuccess(true);
+                setTimeout(() => setEmailCopySuccess(false), 2000);
+            }
+        }
+    };
+
+    const handleCopyPhone = async () => {
+        if (pet.phone) {
+            try {
+                await navigator.clipboard.writeText(pet.phone);
+                setPhoneCopySuccess(true);
+                // Reset success message after 2 seconds
+                setTimeout(() => setPhoneCopySuccess(false), 2000);
+            } catch (err) {
+                console.error('Failed to copy phone:', err);
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = pet.phone;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                setPhoneCopySuccess(true);
+                setTimeout(() => setPhoneCopySuccess(false), 2000);
+            }
         }
     };
 
@@ -71,7 +118,7 @@ function PetCard({ pet, onRemoveFavorite, favoriteId, onContactClick }) {
                 {/* Dynamic Bootstrap modal trigger */}
                 <button 
                     type="button" 
-                    className="btn btn-primary w-100 mb-2" 
+                    className="btn btn-warning w-100 mb-2" 
                     data-bs-toggle="modal" 
                     data-bs-target={`#${modalId}`}
                 >
@@ -119,20 +166,22 @@ function PetCard({ pet, onRemoveFavorite, favoriteId, onContactClick }) {
                                     Close
                                 </button>
                                 {pet.email && (
-                                    <a 
-                                        href={`mailto:${pet.email}?subject=Interested in ${pet.name} (ID: ${pet.id})`}
-                                        className="btn btn-primary"
+                                    <button 
+                                        type="button"
+                                        className={`btn ${emailCopySuccess ? 'btn-success' : 'btn-warning'}`}
+                                        onClick={handleCopyEmail}
                                     >
-                                        Send Email
-                                    </a>
+                                        {emailCopySuccess ? 'Email Copied!' : 'Click to Save Email'}
+                                    </button>
                                 )}
                                 {pet.phone && (
-                                    <a 
-                                        href={`tel:${pet.phone}`}
-                                        className="btn btn-success"
+                                    <button 
+                                        type="button"
+                                        className={`btn ${phoneCopySuccess ? 'btn-success' : 'btn-warning'}`}
+                                        onClick={handleCopyPhone}
                                     >
-                                        Call Shelter
-                                    </a>
+                                        {phoneCopySuccess ? 'Phone Copied!' : 'Click to Save Phone'}
+                                    </button>
                                 )}
                             </div>
                         </div>
