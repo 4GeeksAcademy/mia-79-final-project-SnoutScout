@@ -84,31 +84,28 @@ class Message(db.Model):
 class Questionnaire(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     size = db.Column(db.String(50))
-    activity = db.Column(db.String(50))
-    travel = db.Column(db.String(50))
-    other_pets = db.Column(db.String(100))
-    hypoallergenic = db.Column(db.String(10))
-    gender_preference = db.Column(db.String(50))
-    yard = db.Column(db.String(10))
-    owned_pets_before = db.Column(db.String(10))
+    age = db.Column(db.String(50))
+    gender = db.Column(db.String(50))
+    good_with = db.Column(db.String(150))
+    dog_bahavior = db.Column(db.String(150))
+    coat_length = db.Column(db.String(50))
+    
 
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     def to_dict(self):
         return {
             "id": self.id,
             "size": self.size,
-            "activity": self.activity,
-            "travel": self.travel,
-            "other_pets": self.other_pets,
-            "hypoallergenic": self.hypoallergenic,
-            "gender_preference": self.gender_preference,
-            "yard": self.yard,
-            "owned_pets_before": self.owned_pets_before,
+            "age": self.age,
+            "gender": self.gender,
+            "good_with": self.good_with,
+            "dog_behavior": self.dog_bahavior,
+            "coat_length": self.coat_length,
             "user_id": self.user_id
         }
 
-
+ 
 # Pet model
 class Pet(db.Model):
     __tablename__ = 'pets'
@@ -121,7 +118,7 @@ class Pet(db.Model):
     gender = db.Column(db.String(20))
     weight = db.Column(db.String(50), nullable=True)
     breed = db.Column(db.String(100))
-    activity = db.Column(db.String(512))
+    
 
     # Relationship to access all favorites for this pet
     favorites = db.relationship(
@@ -139,6 +136,5 @@ class Pet(db.Model):
             "image_url": self.image_url,
             "gender": self.gender,
             "weight": self.weight,
-            "breed": self.breed,
-            "activity": self.activity
+            "breed": self.breed
         }

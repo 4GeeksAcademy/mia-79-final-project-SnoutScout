@@ -20,8 +20,6 @@ PETFINDER_API_KEY = os.getenv("PETFINDER_API_KEY")
 PETFINDER_API_SECRET = os.getenv("PETFINDER_API_SECRET")
 
 # Get petfinder API token
-
-
 def get_petfinder_token():
     url = "https://api.petfinder.com/v2/oauth2/token"
     payload = {
@@ -46,21 +44,20 @@ def score_pet_against_questionnaire(pet, questionnaire):
 
     if questionnaire.size and questionnaire.size.lower() in (pet["size"] or "").lower():
         score += 1
-    if questionnaire.age and questionnaire.activity.lower() in (pet["age"] or "").lower():
+    if questionnaire.age and questionnaire.age.lower() in (pet["age"] or "").lower():
         score += 1
-    if questionnaire.gender and questionnaire.location.lower() in (pet["gender"] or "").lower():
+    if questionnaire.gender and questionnaire.gender.lower() in (pet["gender"] or "").lower():
         score += 1
-    if questionnaire.good_with and questionnaire.other_pets.lower() in (pet["good_with"] or "").lower():
+    if questionnaire.good_with and questionnaire.good_with.lower() in (pet["good_with"] or "").lower():
         score += 1
-    if questionnaire.care_and_behavior and questionnaire.hypoallergenic.lower() in (pet["care_and_behavior"] or "").lower():
+    if questionnaire.dog_behavior and questionnaire.dog_behavior.lower() in (pet["dog_behavior"] or "").lower():
         score += 1
-    if questionnaire.coat_length and questionnaire.gender.lower() in (pet["coat_length"] or "").lower():
+    if questionnaire.coat_length and questionnaire.coat_length.lower() in (pet["coat_length"] or "").lower():
         score += 1
 
     return score
 
 # ===== PET MATCHING ROUTES =====
-
 @api.route('/match/<int:user_id>', methods=['GET'])
 @jwt_required()
 def mtch_pets(user_id):
@@ -114,6 +111,29 @@ def register_user():
         "user": new_user.to_dict()
     }), 201
 
+# ====== USER QUESTIONNAIRE ROUTES =====
+@api.route("/questionnaire", methods=["POST"])
+@jwt_required()
+def create_user_questionnaire():
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+    if user is None:
+        return "no such user 😐", 404
+    data = request.json
+    questionnaire = Questionnaire(
+        user_id=user_id,
+        size=data["size"],
+        age=data["age"],
+        gender=data["gender"],
+        good_with=data["good_with"],
+        dog_behavior=data["dog_behavior"],
+        coat_length=data["coat_length"]
+    )
+    db.session.add(questionnaire)
+    db.session.commit()
+    
+    return jsonify(questionnaire.to_dict()), 201
+
 
 # ===== ZIP CODE ROUTES =====
 @api.route('/shelters/<zip_code>', methods=['GET'])
@@ -166,6 +186,7 @@ def get_pets():
         )
     )
     body = login_response.json()
+    print("something", body)
     bearer_token = f"Bearer {body['access_token']}"
     animals_response = requests.get(
         url="https://api.petfinder.com/v2/animals?type=Dog",
@@ -421,28 +442,7 @@ def create_user():
     return jsonify({"success": True, "data": user.to_dict()}), 201
 
 
-@api.route("/questionnaire", methods=["POST"])
-@jwt_required()
-def create_user_questionnaire():
-    user_id = int(get_jwt_identity())
-    user = User.query.get(user_id)
-    if user is None:
-        return "no such user 😐", 404
-    data = request.json
-    questionnaire = Questionnaire(
-        user_id=user_id,
-        size=data["size"],
-        activity=data["activity"],
-        travel=data["travel"],
-        other_pets=data["other_pets"],
-        hypoallergenic=data["hypoallergenic"],
-        gender_preference=data["gender_preference"],
-        yard=data["yard"],
-        owned_pets_before=data["owned_pets_before"]
-    )
-    db.session.add(questionnaire)
-    db.session.commit()
-    return jsonify(questionnaire.to_dict()), 201
+
 
 
 __all__ = ['favorites_bp']

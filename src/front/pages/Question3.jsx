@@ -7,7 +7,7 @@ const Question3 = () => {
   const navigate = useNavigate();
   const { store, dispatch } = useGlobalReducer();
 
-  const options = ["Male", "Female", "Doesn't matter"];
+  const options = ["Male", "Female"];
 
   return (
     <div style={styles.page}>
@@ -34,7 +34,7 @@ const Question3 = () => {
           dispatch({
             type: "update_answer",
             payload: {
-              step: "dog_gender",
+              step: "gender",
               answer: selected
             }
           });

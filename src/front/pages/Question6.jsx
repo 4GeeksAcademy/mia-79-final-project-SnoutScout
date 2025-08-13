@@ -37,7 +37,7 @@ const Question6 = () => {
             dispatch({
               type: "update_answer",
               payload: {
-                step: "owned_pets_before",
+                step: "coat_length",
                 answer: selected
               }
             });

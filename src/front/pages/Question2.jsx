@@ -34,7 +34,7 @@ const Question2 = () => {
           dispatch({
             type: "update_answer",
             payload: {
-              step: "dog_age",
+              step: "age",
               answer: selected
             }
           });
