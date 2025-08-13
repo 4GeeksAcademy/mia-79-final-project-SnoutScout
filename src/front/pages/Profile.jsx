@@ -5,10 +5,12 @@ import useGlobalReducer from "../hooks/useGlobalReducer";
 export const Profile = () => {
     const navigate = useNavigate();
     const { store, dispatch } = useGlobalReducer();
-    const [bio, setBio] = useState(
-        `${store.user.bio || "This user has no bio."}`
-    );
+    // const [bio, setBio] = useState(
+    //     `${store.user.user.bio || "HI"}`
+    // );
+    const [bio, setBio] = useState("This is a bio");
     const apiUrl = import.meta.env.VITE_BACKEND_URL;
+    const user = store.user
 
     useEffect(() => {
         fetchProfile();
@@ -19,11 +21,12 @@ export const Profile = () => {
         console.log("Profile fetch token:", token);
         if (!token) {
             console.error("No token found, redirecting to login.");
-            return;
+            navigate("/login");
         }
 
         const response = await fetch(`${apiUrl}api/profile`, {
             headers: {
+                "Content-Type": "application/json",
                 'Authorization': `Bearer ${token}`,
             },
         })
@@ -106,7 +109,7 @@ export const Profile = () => {
                                 letterSpacing: "0.5px",
                                 textShadow: "0 1px 2px rgba(0,0,0,0.2)"
                             }}>
-                                {store.user.user.first_name} {store.user.user.last_name}
+                                {store.user?.first_name} {store.user?.last_name}
                             </h2>
                         </div>
 
@@ -117,7 +120,7 @@ export const Profile = () => {
                                 border: "1px solid #81C784"
                             }}>
                             <p className="m-0" style={{ color: "#4CAF50" }}>
-                                {store.user.user.bio || "This user has no bio."}
+                                {store.user?.bio || "This user has no bio."}
                             </p>
                         </div>
 

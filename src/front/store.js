@@ -58,17 +58,11 @@ export default function storeReducer(store, action = {}) {
         pets: action.payload,
       };
 
-    // #store user object
     case "set_user":
       return {
         ...store,
-        user: {
-          ...store.user,
-          user: action.payload, // store the user object
-        }
+        user: action.payload, // Store directly without nesting
       };
-
-      
 
     // save an answer to a specific question
     case "update_answer":

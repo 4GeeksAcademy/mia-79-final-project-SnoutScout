@@ -54,7 +54,7 @@ export const router = createBrowserRouter(
       <Route path="/favorites" element={<Favorites />} />
       <Route path="/pets" element={<Pets />} />
       <Route path="/profile" element={<Profile />} />
-      <Route path="/user/:id" element={<Profile />} /> {/* path to view another user's profile */}
+      {/* <Route path="/user/:id" element={<Profile />} /> path to view another user's profile */}
 
 
 

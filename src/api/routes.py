@@ -3,7 +3,7 @@ from api.models import db, User, Message, Pet  # Added Message import
 from api.utils import generate_sitemap, APIException
 from datetime import datetime
 from flask import Blueprint, request, jsonify
-from .models import db, Favorite, Pet, User, Questionnaire
+from .models import db, Favorite, Pet, User, Questionnaire, DogPicture
 import os
 import requests
 from flask_cors import CORS

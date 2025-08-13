@@ -26,14 +26,15 @@ const Login = () => {
       const data = await res.json();
       // data.token data.user
       dispatch({
-        type: "set_user",
+        type: "set_current_user",
         payload: {
-          user: data.user,
+          user: data.user, 
           token: data.token
         }
       }); 
       // store token in localStorage (Ryan recommendation)
       localStorage.setItem("token", data.token);
+      // localStorage.setItem("user", data.user);
 
       console.log("Logged in:", data);
       navigate("/");
