@@ -33,7 +33,7 @@ const Login = () => {
         }
       });
       console.log("Logged in:", data);
-      navigate("/");
+      navigate("/find-your-pup");
     } catch (err) {
       setError(err.message);
     }
