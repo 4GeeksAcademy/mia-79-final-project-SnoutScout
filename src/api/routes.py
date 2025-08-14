@@ -20,6 +20,8 @@ PETFINDER_API_KEY = os.getenv("PETFINDER_API_KEY")
 PETFINDER_API_SECRET = os.getenv("PETFINDER_API_SECRET")
 
 # Get petfinder API token
+
+
 def get_petfinder_token():
     url = "https://api.petfinder.com/v2/oauth2/token"
     payload = {
@@ -64,6 +66,8 @@ def score_pet_against_questionnaire(pet, questionnaire):
     return score
 
 # ===== PET MATCHING ROUTES =====
+
+
 @api.route('/match/<int:user_id>', methods=['GET'])
 @jwt_required()
 def mtch_pets(user_id):
@@ -118,6 +122,8 @@ def register_user():
     }), 201
 
 # ====== USER QUESTIONNAIRE ROUTES =====
+
+
 @api.route("/questionnaire", methods=["POST"])
 @jwt_required()
 def create_user_questionnaire():
@@ -137,7 +143,7 @@ def create_user_questionnaire():
     )
     db.session.add(questionnaire)
     db.session.commit()
-    
+
     return jsonify(questionnaire.to_dict()), 201
 
 
@@ -179,57 +185,151 @@ def login_user():
 @api.route('/pets', methods=['GET'])
 @jwt_required()
 def get_pets():
-    """Get all pets"""
-    grant_type = "client_credentials"
-    client_id = os.environ.get("PET_FINDER_CLIENT_ID", None)
-    client_secret = os.environ.get("PET_FINDER_SECRET", None)
-    login_response = requests.post(
-        url="https://api.petfinder.com/v2/oauth2/token&limit=100",
-        json=dict(
-            grant_type=grant_type,
-            client_id=client_id,
-            client_secret=client_secret
-        )
-    )
-    body = login_response.json()
-    print("something", body)
-    bearer_token = f"Bearer {body['access_token']}"
-    animals_response = requests.get(
-        url="https://api.petfinder.com/v2/animals?type=Dog&limit=100",
-        headers=dict({
-            "Authorization": bearer_token,
-            "Content-Type": "application/json"
-        })
-    )
-    body = animals_response.json()
-    animals = body["animals"]
-    user_id = int(get_jwt_identity())
-    user = User.query.get(user_id)
-    if not user or not user.questionnaire:
-        return jsonify({"error": "User or questionnaire not found"}), 404
-    questionnaire = user.questionnaire
-    current_favorites = user.favorites
-    current_favorite_ids_set = set(
-        [favorite.pet.petfinder_id for favorite in current_favorites])
-    # {77451, 2731, 77462, 8823}
-    animals = list(filter(
-        lambda pet: not set([pet["id"]]).issubset(current_favorite_ids_set),
-        animals
-    ))
-    print(">>> animals without favorites", len(animals))
-    # here is where dogs from petfinder will be filtered
-    # or scored based on the question answers for this user
-    # and the dogs information from petfinder
-    # scored_pets = []
-    # for pet in animals:
-    #     score = score_pet_against_questionnaire(pet, questionnaire)
-    #     scored_pets.append({
-    #         "score": score,
-    #         "pet": pet
-    #     })
-    # scored_pets.sort(key=lambda x: x["score"], reverse=True)
+    """Get all pets from Petfinder API with deduplication"""
+    try:
+        # Use the correct environment variable names from your .env file
+        client_id = os.environ.get("PET_FINDER_CLIENT_ID")
+        client_secret = os.environ.get("PET_FINDER_SECRET")
 
-    return jsonify(animals), 200
+        # Check if credentials are available
+        if not client_id or not client_secret:
+            return jsonify({
+                "error": "Petfinder API credentials not configured",
+                "client_id_exists": bool(client_id),
+                "client_secret_exists": bool(client_secret)
+            }), 500
+
+        print(f"Using client_id: {client_id[:10]}...")
+
+        # Get OAuth token from Petfinder
+        token_response = requests.post(
+            url="https://api.petfinder.com/v2/oauth2/token",
+            data={
+                "grant_type": "client_credentials",
+                "client_id": client_id,
+                "client_secret": client_secret
+            },
+            headers={
+                "Content-Type": "application/x-www-form-urlencoded"
+            }
+        )
+
+        if token_response.status_code != 200:
+            return jsonify({
+                "error": f"Failed to get Petfinder token: {token_response.text}",
+                "status_code": token_response.status_code
+            }), 500
+
+        token_data = token_response.json()
+
+        if 'access_token' not in token_data:
+            return jsonify({
+                "error": "Petfinder API did not return access token",
+                "response": token_data
+            }), 500
+
+        access_token = token_data['access_token']
+
+        # Get query parameters for filtering
+        page = request.args.get('page', 1, type=int)
+        limit = min(request.args.get('limit', 50, type=int),
+                    100)  # Max 100 per API docs
+        location = request.args.get('location', '90210')  # Default location
+        distance = request.args.get(
+            'distance', 50, type=int)  # Default 50 miles
+
+        # Build API parameters according to Petfinder API docs
+        api_params = {
+            'type': 'dog',
+            'status': 'adoptable',  # Only adoptable pets
+            'limit': limit,
+            'page': page,
+            'location': location,
+            'distance': distance,
+            'sort': 'recent'  # Get most recently added pets first
+        }
+
+        # Get animals from Petfinder API
+        animals_response = requests.get(
+            url="https://api.petfinder.com/v2/animals",
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json"
+            },
+            params=api_params  # Use params for GET request
+        )
+
+        print(f"Animals response status: {animals_response.status_code}")
+        # Log the actual URL being called
+        print(f"API URL: {animals_response.url}")
+
+        if animals_response.status_code != 200:
+            return jsonify({
+                "error": f"Failed to get animals from Petfinder: {animals_response.text}",
+                "status_code": animals_response.status_code
+            }), 500
+
+        animals_data = animals_response.json()
+        animals = animals_data.get("animals", [])
+        pagination_info = animals_data.get("pagination", {})
+
+        print(f"Fetched {len(animals)} animals from Petfinder")
+        print(f"Pagination info: {pagination_info}")
+
+        # DEDUPLICATE by pet ID (most important step)
+        seen_ids = set()
+        unique_animals = []
+        for animal in animals:
+            pet_id = animal.get('id')
+            if pet_id and pet_id not in seen_ids:
+                seen_ids.add(pet_id)
+                unique_animals.append(animal)
+            else:
+                print(f"Duplicate pet found and removed: {pet_id}")
+
+        animals = unique_animals
+        print(f"After deduplication: {len(animals)} unique animals")
+
+        # Filter out pets with insufficient data for your app
+        filtered_animals = []
+        for animal in animals:
+            # Only include pets that have photos and basic info
+            if (animal.get('photos') and
+                len(animal.get('photos', [])) > 0 and
+                animal.get('name') and
+                    animal.get('status') == 'adoptable'):
+                filtered_animals.append(animal)
+
+        animals = filtered_animals
+        print(f"After filtering for photos/data: {len(animals)} animals")
+
+        # Get current user and filter out favorites
+        user_id = int(get_jwt_identity())
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        # Filter out favorites if user has them
+        current_favorites = user.favorites if user.favorites else []
+        current_favorite_ids_set = set(
+            [str(favorite.pet.petfinder_id) for favorite in current_favorites
+             if favorite.pet and favorite.pet.petfinder_id]
+        )
+
+        if current_favorite_ids_set:
+            animals = [pet for pet in animals if str(
+                pet.get("id")) not in current_favorite_ids_set]
+            print(
+                f"After filtering favorites: {len(animals)} animals remaining")
+
+        # Return response with pagination info
+        return jsonify(animals), 200
+
+    except Exception as e:
+        print(f"Error in get_pets: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": f"Internal server error: {str(e)}"}), 500
 
 
 @api.route('/messages', methods=['GET'])
@@ -437,7 +537,7 @@ def sync_pets_from_petfinder():
 def get_favorites():
     user_id = int(get_jwt_identity())  # Current logged-in user's ID
     favorites = Favorite.query.filter_by(user_id=user_id).all()
-    
+
     if not user_id:
         return jsonify({"success": False, "error": "user_id is required"}), 400
 
@@ -468,11 +568,14 @@ def add_favorite():
         # Pet doesn't exist, create it
         try:
             new_pet = Pet(
-                petfinder_id=str(pet_id),  # Store as string to match your model
+                # Store as string to match your model
+                petfinder_id=str(pet_id),
                 name=pet["name"],
                 age=pet.get('age', ''),
-                location=pet.get('contact', {}).get('address', {}).get('address1', ''),
-                image_url=pet.get('photos', [{}])[0].get('full') if pet.get('photos') else None,
+                location=pet.get('contact', {}).get(
+                    'address', {}).get('address1', ''),
+                image_url=pet.get('photos', [{}])[0].get(
+                    'full') if pet.get('photos') else None,
                 gender=pet.get('gender', ''),
                 breed=pet.get('breeds', {}).get('primary', ''),
                 activity=str(pet.get('tags', [])),
@@ -482,10 +585,11 @@ def add_favorite():
                 url=pet.get('url', ''),
                 published_at=pet.get('published_at', ''),
                 email=str(pet.get('contact', {}).get('email', {})),
-                phone=str(pet.get('contact', {}).get('phone', {})),  
+                phone=str(pet.get('contact', {}).get('phone', {})),
                 city=pet.get('contact', {}).get('address', {}).get('city', ''),
-                state=pet.get('contact', {}).get('address', {}).get('state', ''),
-                
+                state=pet.get('contact', {}).get(
+                    'address', {}).get('state', ''),
+
             )
             db.session.add(new_pet)
             db.session.commit()
@@ -515,24 +619,24 @@ def add_favorite():
 # def add_favorite():
     try:
         print("=== FAVORITE ROUTE DEBUG ===")
-        
+
         # Get data
         data = request.get_json()
         print(f"Request data: {data}")
-        
+
         pet = data.get('pet')
         user_id = int(get_jwt_identity())
         pet_id = data.get('pet_id')  # This is the Petfinder ID
-        
+
         print(f"User ID: {user_id}")
         print(f"Pet ID (from Petfinder): {pet_id}")
         print(f"Pet data keys: {pet.keys() if pet else 'No pet data'}")
-        
+
         # Validate required data
         if not user_id or not pet_id:
             print("ERROR: Missing user_id or pet_id")
             return jsonify({"success": False, "error": "user_id and pet_id required"}), 400
-        
+
         if not pet:
             print("ERROR: Missing pet data")
             return jsonify({"success": False, "error": "pet data required"}), 400
@@ -540,13 +644,13 @@ def add_favorite():
         # Check if pet already exists in database
         existing_pet = Pet.query.filter_by(petfinder_id=pet_id).first()
         print(f"Existing pet found: {existing_pet is not None}")
-        
+
         if existing_pet:
             print(f"Using existing pet with DB ID: {existing_pet.id}")
             pet_db_id = existing_pet.id
         else:
             print("Creating new pet...")
-            
+
             # Extract location safely
             location = "Unknown"
             if pet.get('contact') and pet['contact'].get('address'):
@@ -555,19 +659,20 @@ def add_favorite():
                     location = f"{address['city']}, {address['state']}"
                 elif address.get('address1'):
                     location = address['address1']
-            
+
             # Extract image URL safely
             image_url = None
             if pet.get('photos') and len(pet['photos']) > 0:
                 image_url = pet['photos'][0].get('full')
-            
+
             # Extract breed safely
             breed = "Mixed"
             if pet.get('breeds') and pet['breeds'].get('primary'):
                 breed = pet['breeds']['primary']
-            
-            print(f"Creating pet with: name={pet.get('name')}, location={location}, breed={breed}")
-            
+
+            print(
+                f"Creating pet with: name={pet.get('name')}, location={location}, breed={breed}")
+
             new_pet = Pet(
                 petfinder_id=pet_id,
                 name=pet.get("name", "Unknown"),
@@ -579,7 +684,7 @@ def add_favorite():
                 activity=str(pet.get('tags', [])),
                 size=pet.get("size", "Unknown")
             )
-            
+
             db.session.add(new_pet)
             db.session.flush()  # Get ID without committing
             pet_db_id = new_pet.id
@@ -588,7 +693,7 @@ def add_favorite():
         # Check if favorite already exists
         existing_favorite = Favorite.query.filter_by(
             user_id=user_id, pet_id=pet_db_id).first()
-        
+
         if existing_favorite:
             print("ERROR: Favorite already exists")
             return jsonify({"success": False, "error": "Pet is already in favorites"}), 400
@@ -598,12 +703,12 @@ def add_favorite():
         favorite = Favorite(user_id=user_id, pet_id=pet_db_id)
         db.session.add(favorite)
         db.session.commit()
-        
+
         print("SUCCESS: Favorite saved to database!")
         print(f"Favorite ID: {favorite.id}")
-        
+
         return jsonify({"success": True, "data": favorite.to_dict()}), 201
-        
+
     except Exception as e:
         db.session.rollback()
         print(f"ERROR in add_favorite: {str(e)}")
@@ -676,7 +781,8 @@ def delete_favorite(favorite_id):
     user_id = int(get_jwt_identity())
     if not user_id:
         return jsonify({"success": False, "error": "user_id required"}), 400
-    favorite = Favorite.query.filter_by(id=favorite_id, user_id=user_id).first()
+    favorite = Favorite.query.filter_by(
+        id=favorite_id, user_id=user_id).first()
     if not favorite:
         return jsonify({"success": False, "error": "Favorite not found"}), 404
     db.session.delete(favorite)
@@ -717,9 +823,6 @@ def create_user():
     db.session.commit()
 
     return jsonify({"success": True, "data": user.to_dict()}), 201
-
-
-
 
 
 __all__ = ['favorites_bp']

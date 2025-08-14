@@ -110,12 +110,12 @@ class Pet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     age = db.Column(db.String(50))
-    location = db.Column(db.String(100))
-    image_url = db.Column(db.String(1000))
+    location = db.Column(db.String(500))
+    image_url = db.Column(db.String(1500))
     gender = db.Column(db.String(20))
     weight = db.Column(db.String(50))
     breed = db.Column(db.String(100))
-    activity = db.Column(db.String(500))
+    activity = db.Column(db.Text)
     email = db.Column(db.String(200))
     phone = db.Column(db.String(200))
     city = db.Column(db.String(200))
@@ -127,7 +127,7 @@ class Pet(db.Model):
     description = db.Column(db.Text)  # Petfinder description
     status = db.Column(db.String(50))  # adoptable, adopted, found, etc.
     organization_id = db.Column(db.String(50))  # Petfinder organization ID
-    url = db.Column(db.String(255))  # Petfinder URL
+    url = db.Column(db.String(1000))  # Petfinder URL
     published_at = db.Column(db.String(100))  # When published on Petfinder
     contact = db.Column(db.Text)  # JSON string of contact info
 
