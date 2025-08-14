@@ -5,12 +5,16 @@ import useGlobalReducer from "../hooks/useGlobalReducer";
 export const Profile = () => {
     const navigate = useNavigate();
     const { store, dispatch } = useGlobalReducer();
-    // const [bio, setBio] = useState(
-    //     `${store.user.user.bio || "HI"}`
-    // );
-    const [bio, setBio] = useState("This is a bio");
+    const [bio, setBio] = useState("");
+    const [profilePic, setProfilePic] = useState("");
+    const [dogPictures, setDogPictures] = useState([
+        { position: 1, image_url: "" },
+        { position: 2, image_url: "" },
+        { position: 3, image_url: "" },
+        { position: 4, image_url: "" }
+    ]);
+    const [loading, setLoading] = useState(false);
     const apiUrl = import.meta.env.VITE_BACKEND_URL;
-    const user = store.user
 
     useEffect(() => {
         fetchProfile();
@@ -18,31 +22,74 @@ export const Profile = () => {
 
     const fetchProfile = async () => {
         const token = localStorage.getItem("token");
-        console.log("Profile fetch token:", token);
         if (!token) {
-            console.error("No token found, redirecting to login.");
             navigate("/login");
+            return;
         }
 
+        setLoading(true);
         const response = await fetch(`${apiUrl}api/profile`, {
             headers: {
                 "Content-Type": "application/json",
                 'Authorization': `Bearer ${token}`,
             },
-        })
+        });
+        
         if (!response.ok) {
             const errorData = await response.json();
             console.error("Error fetching profile:", errorData);
-            alert("Failed to fetch profile. Please try again.");
+            setLoading(false);
             return;
         }
+        
         const data = await response.json();
-        dispatch({ type: "set_user", payload: data.user });
-        return
-    };
-    const handleUpdateProfile = async () => {
+        dispatch({ 
+            type: "set_user", 
+            payload: {
+                ...data.user,
+                // Ensure dog_pictures is always an array
+                dog_pictures: data.user.dog_pictures || []
+            } 
+        });
 
-        const response = await fetch(`${apiUrl}api/profile`, {
+        // Initialize all states from the fetched data
+        setBio(data.user.bio || "");
+        setProfilePic(data.user.profile_pic_url || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png");
+        
+        // Initialize dog pictures from response or use defaults
+        const defaultPictures = [
+            { position: 1, image_url: "" },
+            { position: 2, image_url: "" },
+            { position: 3, image_url: "" },
+            { position: 4, image_url: "" }
+        ];
+        
+        if (data.user.dog_pictures?.length > 0) {
+            const updatedPictures = [...defaultPictures];
+            data.user.dog_pictures.forEach(pic => {
+                const index = pic.position - 1;
+                if (index >= 0 && index < 4) {
+                    updatedPictures[index] = pic;
+                }
+            });
+            setDogPictures(updatedPictures);
+        } else {
+            setDogPictures(defaultPictures);
+        }
+        setLoading(false);
+    };
+
+    const handleSaveProfile = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            navigate("/login");
+            return;
+        }
+
+        setLoading(true);
+        
+        // Update profile info
+        const profileResponse = await fetch(`${apiUrl}api/profile`, {
             method: 'PUT',
             headers: {
                 "Content-Type": "application/json",
@@ -50,16 +97,55 @@ export const Profile = () => {
             },
             body: JSON.stringify({
                 bio,
+                profile_pic_url: profilePic
             }),
         });
 
-        if (!response.ok) {
-            const errorData = await response.json();
+        if (!profileResponse.ok) {
+            const errorData = await profileResponse.json();
             console.error("Error updating profile:", errorData);
             alert("Failed to update profile. Please try again.");
+            setLoading(false);
             return;
         }
-        fetchProfile()
+
+        // Update dog pictures
+        const picturesResponse = await fetch(`${apiUrl}api/dog-pictures`, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ dog_pictures: dogPictures }),
+        });
+
+        if (!picturesResponse.ok) {
+            console.error("Error updating dog pictures");
+            setLoading(false);
+            return;
+        }
+
+        // Update local state with new data
+        const updatedProfile = await profileResponse.json();
+        const updatedPictures = await picturesResponse.json();
+        
+        dispatch({ 
+            type: "set_user", 
+            payload: { 
+                ...updatedProfile.user, 
+                dog_pictures: updatedPictures.dog_pictures || [] 
+            } 
+        });
+
+        // Close modal and refresh
+        const modalEl = document.getElementById('staticBackdrop');
+        if (modalEl) {
+            const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            modal.hide();
+        }
+
+        alert("Profile updated successfully!");
+        setLoading(false);
     };
 
     return (
@@ -86,10 +172,14 @@ export const Profile = () => {
                                 height: "200px"
                             }}>
                             <img
-                                src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
+                                src={profilePic || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"}
                                 className="h-100 w-100"
                                 alt="Profile"
                                 style={{ objectFit: "cover" }}
+                                onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
+                                }}
                             />
                         </div>
                     </div>
@@ -113,7 +203,6 @@ export const Profile = () => {
                             </h2>
                         </div>
 
-
                         <div className="bio-container mb-4 p-3 rounded"
                             style={{
                                 backgroundColor: "rgba(129, 199, 132, 0.1)",
@@ -136,6 +225,7 @@ export const Profile = () => {
                                 className="btn btn-primary"
                                 data-bs-toggle="modal"
                                 data-bs-target="#staticBackdrop"
+                                disabled={loading}
                             >
                                 Edit Profile
                             </button>
@@ -158,8 +248,8 @@ export const Profile = () => {
                         My Photos
                     </h4>
                     <div className="photos-grid d-flex flex-wrap justify-content-around">
-                        {[1, 2, 3, 4].map((item) => (
-                            <div key={item} className="photo-item"
+                        {dogPictures.map((pic, index) => (
+                            <div key={index} className="photo-item"
                                 style={{
                                     width: "160px",
                                     height: "160px",
@@ -174,10 +264,14 @@ export const Profile = () => {
                                 onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
                                 onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}>
                                 <img
-                                    src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
+                                    src={pic.image_url || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"}
                                     className="h-100 w-100"
-                                    alt="Photo"
+                                    alt={`Dog ${index + 1}`}
                                     style={{ objectFit: "cover" }}
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
+                                    }}
                                 />
                             </div>
                         ))}
@@ -202,7 +296,7 @@ export const Profile = () => {
                             color: "#FFFFFF"
                         }}>
                             <h1 className="modal-title fs-5" id="staticBackdropLabel">
-                                Edit Your Bio!
+                                Edit Your Profile!
                             </h1>
                             <button
                                 type="button"
@@ -212,29 +306,65 @@ export const Profile = () => {
                             ></button>
                         </div>
                         <div className="modal-body">
-                            <input
-                                type="text"
-                                className="form-control mb-3"
-                                placeholder="Enter your bio..."
-                                value={bio}
-                                onChange={(e) => setBio(e.target.value)}
-                                style={{ border: "1px solid #81C784" }}
-                            />
+                            {/* Profile Picture */}
+                            <div className="mb-3">
+                                <label className="form-label">Profile Picture URL</label>
+                                <input
+                                    type="url"
+                                    className="form-control"
+                                    value={profilePic}
+                                    onChange={(e) => setProfilePic(e.target.value)}
+                                    placeholder="https://example.com/profile.jpg"
+                                />
+                            </div>
+
+                            {/* Bio */}
+                            <div className="mb-3">
+                                <label className="form-label">Bio</label>
+                                <textarea
+                                    className="form-control"
+                                    value={bio}
+                                    onChange={(e) => setBio(e.target.value)}
+                                    placeholder="Tell us about yourself..."
+                                    rows="3"
+                                />
+                            </div>
+
+                            {/* Dog Pictures */}
+                            <h5 className="mt-4 mb-3">Dog Photos</h5>
+                            {dogPictures.map((pic, index) => (
+                                <div key={index} className="mb-3">
+                                    <label className="form-label">Photo {index + 1} URL</label>
+                                    <input
+                                        type="url"
+                                        className="form-control"
+                                        value={pic.image_url}
+                                        onChange={(e) => {
+                                            const updated = [...dogPictures];
+                                            updated[index].image_url = e.target.value;
+                                            setDogPictures(updated);
+                                        }}
+                                        placeholder={`https://example.com/dog${index + 1}.jpg`}
+                                    />
+                                </div>
+                            ))}
                         </div>
                         <div className="modal-footer">
                             <button
                                 type="button"
                                 className="btn btn-secondary"
                                 data-bs-dismiss="modal"
+                                disabled={loading}
                             >
-                                Close
+                                Cancel
                             </button>
                             <button
                                 type="button"
                                 className="btn btn-success"
-                                onClick={handleUpdateProfile}
+                                onClick={handleSaveProfile}
+                                disabled={loading}
                             >
-                                Save Changes
+                                {loading ? "Saving..." : "Save Changes"}
                             </button>
                         </div>
                     </div>

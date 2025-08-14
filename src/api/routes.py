@@ -208,6 +208,7 @@ def get_pets():
 
     return jsonify(animals), 200
 
+
 @api.route('/profile', methods=['GET'])
 @jwt_required()
 def get_profile():
@@ -217,53 +218,107 @@ def get_profile():
     if not user:
         return jsonify({"error": "User not found"}), 404
     print("User found:", user.to_dict())
+
     # Fetch dog pictures for the user
-    
+    dog_pictures = DogPicture.query.filter_by(user_id=user_id).all()
+    user_dict = user.to_dict()
+    user_dict['dog_pictures'] = [pic.to_dict() for pic in dog_pictures]
+
     return jsonify({"user": user.to_dict()}), 200
+
 
 @api.route('/profile', methods=['PUT'])
 @jwt_required()
-def update_profile():
+def handleSaveProfile():
     user_id = int(get_jwt_identity())
     user = User.query.get(user_id)
 
     if not user:
         return jsonify({"error": "User not found"}, 404)
-    
+
     data = request.get_json()
 
     # Update bio if provided
     if 'bio' in data:
         user.bio = data['bio']
-    
+
     # Update profile picture URL if provided
     if 'profile_pic_url' in data:
         user.profile_pic_url = data['profile_pic_url']
-    
+
+    # Update dog picture URLs if provided
+    if 'dog_pictures' in data:
+        for pic_data in data['dog_pictures']:
+            position = pic_data.get('position')
+            image_url = pic_data.get('image_url')
+
+            if position and image_url:
+                # Check if there's already a picture in this position
+                existing_pic = DogPicture.query.filter_by(
+                    user_id=user_id,
+                    position=position
+                ).first()
+
+                if existing_pic:
+                    # Update existing picture
+                    existing_pic.image_url = image_url
+                else:
+                    # Create new picture
+                    new_pic = DogPicture(
+                        user_id=user_id,
+                        image_url=image_url,
+                        position=position
+                    )
+                    db.session.add(new_pic)
+
     db.session.commit()
-    
+
     return jsonify({"user": user.to_dict()}), 200
+
+
+@api.route('/profile/picture', methods=['POST'])
+@jwt_required()
+def update_profile_picture():
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    data = request.get_json()
+
+    if not data or 'profile_pic' not in data:
+        return jsonify({"error": "Profile picture is required"}), 400
+
+    profile_pic = data['profile_pic']
+
+    # Update the user's profile picture URL
+    user.profile_pic_url = profile_pic
+    db.session.commit()
+
+    return jsonify({"success": True, "profile_pic": profile_pic}), 200
+
 
 @api.route('/dog-pictures', methods=['POST'])
 @jwt_required()
 def add_dog_picture():
     user_id = int(get_jwt_identity())
     data = request.get_json()
-    
+
     required_fields = ['image_url', 'position']
     if not all(field in data for field in required_fields):
         return jsonify({"error": "Missing required fields"}), 400
-       
+
     # Check if position is valid (1-4)
     if data['position'] not in [1, 2, 3, 4]:
         return jsonify({"error": "Position must be between 1 and 4"}), 400
-    
+
     # Check if there's already a picture in this position
     existing_pic = DogPicture.query.filter_by(
-        user_id=user_id, 
+        user_id=user_id,
         position=data['position']
     ).first()
-    
+
     if existing_pic:
         # Update existing picture
         existing_pic.image_url = data['image_url']
@@ -275,48 +330,51 @@ def add_dog_picture():
             position=data['position']
         )
         db.session.add(new_pic)
-    
+
     db.session.commit()
-    
+
     return jsonify({"success": True}), 201
+
 
 @api.route('/dog-pictures/<int:position>', methods=['DELETE'])
 @jwt_required()
 def remove_dog_picture(position):
     user_id = int(get_jwt_identity())
-    
+
     # Check if position is valid (1-4)
     if position not in [1, 2, 3, 4]:
         return jsonify({"error": "Position must be between 1 and 4"}), 400
-    
+
     picture = DogPicture.query.filter_by(
-        user_id=user_id, 
+        user_id=user_id,
         position=position
     ).first()
-    
+
     if not picture:
         return jsonify({"error": "No picture found in this position"}), 404
-    
+
     db.session.delete(picture)
     db.session.commit()
-    
+
     return jsonify({"success": True}), 200
 
-@api.route('/user-profile', methods=['GET'])
+
+@api.route('/dog-pictures', methods=['GET'])
 @jwt_required()
 def get_user_profile():
     user_id = int(get_jwt_identity())
     user = User.query.get(user_id)
-    
+
     if not user:
         return jsonify({"error": "User not found"}), 404
-    
+
     dog_pictures = DogPicture.query.filter_by(user_id=user_id).all()
-    
+
     response = user.to_dict()
     response['dog_pictures'] = [pic.to_dict() for pic in dog_pictures]
-    
+
     return jsonify(response), 200
+
 
 @api.route('/messages', methods=['GET'])
 def get_messages():
@@ -383,7 +441,8 @@ def get_contacts():
 
         contacts_data.append({
             "id": contact.id,
-            "name": contact.name,
+            # <-- updated line
+            "name": f"{contact.first_name} {contact.last_name}",
             "last_message": last_message.content if last_message else None,
         })
 
